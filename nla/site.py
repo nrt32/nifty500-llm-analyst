@@ -28,7 +28,7 @@ footer { margin-top: 3rem; font-size: 0.85rem; color: #777; }
 </head>
 <body>
 {body}
-<footer>Not investment advice. Personal research tool for the repository owner.</footer>
+<footer>Not investment advice.</footer>
 </body>
 </html>
 """

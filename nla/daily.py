@@ -69,7 +69,7 @@ def render_daily_report(target: date, refreshed: bool, price_source: str, repair
             lines.append(f"| Symbols | {df['symbol'].nunique()} |")
         except Exception:
             pass
-    lines += ["", "_Not investment advice. Personal research tool for the repository owner._"]
+    lines += ["", "_Not investment advice._"]
     return "\n".join(lines) + "\n"
 
 

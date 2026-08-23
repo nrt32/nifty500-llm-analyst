@@ -85,7 +85,7 @@ def render_screen(slug: str, mom: pd.DataFrame, rs: pd.DataFrame, hist: pd.DataF
     lines += [
         "",
         "---",
-        "_Not investment advice. Personal research tool for the repository owner. "
+        "_Not investment advice. "
         "Factor ranks are descriptive, not recommendations; score engine and risk rules land in Phase 3._",
     ]
     return "\n".join(lines) + "\n"

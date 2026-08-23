@@ -1,8 +1,8 @@
 # nifty500-llm-analyst
 
-Personal, recommendation-only research pipeline for Indian equities (Nifty 500 universe). An LLM analyst layer writes thesis memos and conviction scores; a deterministic score engine has the final say on every buy/sell recommendation. Long-only cash, positional holds of months–quarters.
+Research pipeline for Indian equities: an LLM analyst layer writes thesis memos and conviction scores over a quant screen; a deterministic score engine has the final say on every buy/sell recommendation. Universe is the top-N most liquid listed stocks (default 1000, configurable). Long-only cash, positional holds of months–quarters.
 
-**Not investment advice. Personal research tool for the owner's own portfolio (<5% allocation).**
+**Not investment advice. Personal research tool.**
 
 ## Architecture
 
@@ -83,13 +83,3 @@ python -m nla.weekly                                            # weekly report 
 python -m nla.site                                              # rebuild site/ from reports/
 ```
 
-## First push
-
-Create an empty public repo `nifty500-llm-analyst` on github.com (no README/license), then:
-
-```bash
-git remote add origin git@github.com:<username>/nifty500-llm-analyst.git
-git push -u origin main
-```
-
-After pushing: add secrets (Settings → Secrets and variables → Actions), enable Pages with Source = **GitHub Actions**, then manually trigger `weekly-review` once to validate the CI → report → Pages path.
