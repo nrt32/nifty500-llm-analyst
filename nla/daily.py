@@ -4,11 +4,11 @@ from datetime import date, datetime, timedelta, timezone
 
 import pandas as pd
 
-from nla.config import DATA_DIR, REPORTS_DIR, UNIVERSE_CSV
+from nla.config import DATA_DIR, REPORTS_DIR, UNIVERSE_CSV, UNIVERSE_MODE, UNIVERSE_SIZE
 from nla.history import CLOSE_PARQUET, refresh_from_daily
 from nla.ingest import day_path, update_day
 from nla.report import write_report
-from nla.universe import refresh_universe
+from nla.universe import LIQUID_UNIVERSE_CSV, build_liquid_universe, refresh_universe
 
 IST = timezone(timedelta(hours=5, minutes=30))
 PUBLISH_CUTOFF_HOUR = 18
@@ -46,7 +46,7 @@ def repair_recent(window: int = REPAIR_WINDOW_DAYS) -> list[str]:
     return repaired
 
 
-def render_daily_report(target: date, refreshed: bool, price_source: str, repaired: list[str], history_rows: int | None = None) -> str:
+def render_daily_report(target: date, refreshed: bool, price_source: str, repaired: list[str], history_rows: int | None = None, liquid_n: int | None = None) -> str:
     lines = [
         f"# Daily Scan {target.isoformat()}",
         "",
@@ -57,6 +57,8 @@ def render_daily_report(target: date, refreshed: bool, price_source: str, repair
         f"| Price source | {SOURCE_LABELS.get(price_source, price_source)} |",
         f"| Backfilled | {', '.join(repaired) if repaired else 'nothing pending'} |",
     ]
+    if liquid_n is not None:
+        lines.append(f"| Liquid universe size | {liquid_n} |")
     if history_rows is not None:
         lines.append(f"| Close history rows | {history_rows} |")
     path = day_path(target)
@@ -77,8 +79,19 @@ def main() -> int:
     if not UNIVERSE_CSV.exists():
         print("universe file unavailable", file=sys.stderr)
         return 2
+    if UNIVERSE_MODE == "liquid" and not LIQUID_UNIVERSE_CSV.exists():
+        try:
+            build_liquid_universe(UNIVERSE_SIZE)
+        except Exception:
+            pass
     price_source = update_day(target)
     repaired = repair_recent()
+    liquid_n: int | None = None
+    if UNIVERSE_MODE == "liquid":
+        try:
+            liquid_n = len(build_liquid_universe(UNIVERSE_SIZE))
+        except Exception:
+            liquid_n = None
     history_rows: int | None = None
     if CLOSE_PARQUET.exists():
         try:
@@ -91,11 +104,12 @@ def main() -> int:
         "price_source": price_source,
         "repaired": repaired,
         "history_rows": history_rows,
+        "liquid_universe": liquid_n,
     }
     (DATA_DIR / "status.json").write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
     write_report(
         REPORTS_DIR / "daily" / f"{target.isoformat()}.md",
-        render_daily_report(target, refreshed, price_source, repaired, history_rows),
+        render_daily_report(target, refreshed, price_source, repaired, history_rows, liquid_n),
     )
     print(json.dumps(payload))
     if price_source == "missing-universe":

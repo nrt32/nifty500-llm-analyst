@@ -9,7 +9,7 @@ import requests
 import yfinance as yf
 
 from nla.config import PRICE_DIR
-from nla.universe import HEADERS, load_universe
+from nla.universe import HEADERS, load_active_symbols
 
 BHAVCOPY_URL = "https://archives.nseindia.com/products/content/sec_bhavdata_full_{ddmmyyyy}.csv"
 
@@ -119,7 +119,7 @@ def update_day(d: date) -> str:
         bhavcopy.to_parquet(path, index=False)
         return "bhavcopy"
     try:
-        symbols = load_universe()
+        symbols = load_active_symbols()
     except Exception:
         return "missing-universe"
     yahoo = fetch_yahoo_close(symbols, d, d)

@@ -27,3 +27,6 @@ GEMINI_MODEL = env("NLA_GEMINI_MODEL", "gemini-2.0-flash")
 OPENCODE_BASE_URL = env("OPENCODE_BASE_URL", "https://opencode.ai/zen/v1")
 OPENCODE_API_KEY = env("OPENCODE_API_KEY")
 GEMINI_API_KEY = env("GEMINI_API_KEY")
+
+UNIVERSE_MODE = env("NLA_UNIVERSE_MODE", "liquid").lower()
+UNIVERSE_SIZE = int(env("NLA_UNIVERSE_SIZE", "1000"))

@@ -9,6 +9,7 @@ from nla.history import load_close_history, refresh_from_daily
 from nla.report import write_report
 from nla.sector import load_sector_map, refresh_sector_map, relative_strength
 from nla.site import build_site
+from nla.universe import load_active_symbols
 
 TOP_N = 30
 
@@ -39,7 +40,7 @@ def render_screen(slug: str, mom: pd.DataFrame, rs: pd.DataFrame, hist: pd.DataF
         "| Field | Value |",
         "| --- | --- |",
         f"| Close history rows | {len(hist)} |",
-        f"| Symbols with history | {hist['symbol'].nunique()} / 500 |",
+        f"| Symbols with history | {hist['symbol'].nunique()} in universe |",
         f"| Data window | {first} to {last} |",
         f"| Sector map coverage | {covered} / {hist['symbol'].nunique()} (NSE sector indices) |",
         "",
@@ -101,6 +102,11 @@ def main() -> int:
     except Exception:
         pass
     hist = load_close_history()
+    try:
+        active = set(load_active_symbols())
+        hist = hist[hist["symbol"].isin(active)]
+    except Exception:
+        pass
     smap = load_sector_map()
     mom = momentum_ranks(hist)
     rs = relative_strength(hist, smap)

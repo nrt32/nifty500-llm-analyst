@@ -10,7 +10,7 @@ import pandas as pd
 import yfinance as yf
 
 from nla.config import DATA_DIR, PRICE_DIR
-from nla.universe import load_universe
+from nla.universe import load_active_symbols
 
 HISTORY_DIR = DATA_DIR / "history"
 CLOSE_PARQUET = HISTORY_DIR / "close.parquet"
@@ -57,7 +57,7 @@ def _fetch_yahoo_closes(symbols: list[str], period: str = "1y") -> pd.DataFrame:
 
 def bootstrap(symbols: list[str] | None = None, period: str = "1y") -> pd.DataFrame:
     HISTORY_DIR.mkdir(parents=True, exist_ok=True)
-    fresh = _fetch_yahoo_closes(symbols or load_universe(), period)
+    fresh = _fetch_yahoo_closes(symbols or load_active_symbols(), period)
     history = fresh
     if CLOSE_PARQUET.exists() and not fresh.empty:
         existing = pd.read_parquet(CLOSE_PARQUET)

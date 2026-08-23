@@ -45,6 +45,15 @@ announcements ┘            sector relative strength     sector-cycle stage
 
 Scheduled runs may be delayed minutes–hours by GitHub; daily commits also keep the scheduler alive past GitHub's 60-day inactivity cutoff.
 
+## Universe selection
+
+Two modes, controlled by env (`NLA_UNIVERSE_MODE`, `NLA_UNIVERSE_SIZE`; defaults `liquid`, `1000`):
+
+- `nifty500` — official NSE Nifty 500 constituent list
+- `liquid` — top-N stocks by **median daily turnover** over the last ~20 sessions (from committed bhavcopy parquets), with floors: price ≥ ₹20, median turnover ≥ ₹0.5cr, listed on ≥ half the window days. At N=1000 the marginal name still trades ~₹6cr/day.
+
+Membership snapshots are archived under `data/reference/universe_history/` whenever composition changes, keeping churn auditable for the Phase 3 paper ledger. Known limitation: sector-index coverage (~190 names) and yahoo backfill depth thin out in the smallcap tail; tail momentum starts accruing from ingestion day via bhavcopy.
+
 ## Data waterfall
 
 1. NSE full-delivery bhavcopy CSV: `https://archives.nseindia.com/products/content/sec_bhavdata_full_{DDMMYYYY}.csv` — CDN-backed, usually reachable from cloud runners.
