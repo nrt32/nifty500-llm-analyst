@@ -65,7 +65,7 @@ NSE blocks most cloud/datacenter IPs. If bhavcopy ever hard-fails from runner IP
 ## Security model
 
 - Public repo ⇒ zero secrets in code or git history, ever.
-- Keys live ONLY as GitHub encrypted Actions secrets (`GEMINI_API_KEY`, optional `OPENCODE_API_KEY`), injected as env vars; GitHub auto-redacts secret values in run logs.
+- Keys live ONLY as GitHub encrypted Actions secrets (`GEMINI_API_KEY`, optional `OPENCODE_API_KEY`), injected as env vars; GitHub auto-redacts secret values in run logs. Get a Gemini key at aistudio.google.com (free tier).
 - `.env` is gitignored (local dev only); `.env.example` holds placeholders only.
 - Never paste keys into issues, commits, or workflow files. If a key leaks: revoke immediately at the provider.
 
