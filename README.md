@@ -52,7 +52,7 @@ Two modes, controlled by env (`NLA_UNIVERSE_MODE`, `NLA_UNIVERSE_SIZE`; defaults
 - `nifty500` — official NSE Nifty 500 constituent list
 - `liquid` — top-N stocks by **median daily turnover** over the last ~20 sessions (from committed bhavcopy parquets), with floors: price ≥ ₹20, median turnover ≥ ₹0.5cr, listed on ≥ half the window days. At N=1000 the marginal name still trades ~₹6cr/day.
 
-Membership snapshots are archived under `data/reference/universe_history/` whenever composition changes, keeping churn auditable for the Phase 3 paper ledger. Known limitation: sector-index coverage (~190 names) and yahoo backfill depth thin out in the smallcap tail; tail momentum starts accruing from ingestion day via bhavcopy.
+Membership snapshots are archived under `data/reference/universe_history/` whenever composition changes, keeping churn auditable for the Phase 3 paper ledger. Churn is damped with hysteresis: a new name must rank inside the top N to enter, but an existing member only drops out once it falls outside the top N×1.1 — so boundary names don't flap in and out daily. Price history for dropped names keeps accumulating (bhavcopy is all-market), and dated snapshots allow reconstructing membership as of any past date. Known limitation: sector-index coverage (~190 names) and yahoo backfill depth thin out in the smallcap tail; tail momentum starts accruing from ingestion day via bhavcopy.
 
 ## Data waterfall
 

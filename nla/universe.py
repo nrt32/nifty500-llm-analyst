@@ -49,6 +49,7 @@ def build_liquid_universe(
     min_price: float = 20.0,
     min_turnover_cr: float = 0.5,
     window_files: int = 20,
+    exit_buffer_pct: float = 0.10,
 ) -> pd.DataFrame:
     paths = sorted(PRICE_DIR.glob("*.parquet"))[-window_files:]
     if not paths:
@@ -77,18 +78,28 @@ def build_liquid_universe(
     ]
     ranked = (
         stats.sort_values("median", ascending=False)
-        .head(top_n)
         .reset_index()[["symbol", "close", "median", "days"]]
         .rename(columns={"median": "med_turnover_cr"})
     )
-    content = ranked.to_csv(index=False)
+    try:
+        existing = set(load_liquid_universe()["symbol"])
+    except Exception:
+        existing = set()
+    exit_rank_cap = int(top_n * (1 + exit_buffer_pct))
+    kept_rows: list[pd.DataFrame] = []
+    for idx, row in enumerate(ranked.itertuples(index=False), start=1):
+        rank_cap = exit_rank_cap if row.symbol in existing else top_n
+        if idx <= rank_cap:
+            kept_rows.append(pd.DataFrame([{"symbol": row.symbol, "close": row.close, "med_turnover_cr": row.med_turnover_cr, "days": row.days}]))
+    ranked_out = pd.concat(kept_rows, ignore_index=True) if kept_rows else ranked.head(0)
+    content = ranked_out.to_csv(index=False)
     changed = not LIQUID_UNIVERSE_CSV.exists() or LIQUID_UNIVERSE_CSV.read_text(encoding="utf-8") != content
     LIQUID_UNIVERSE_CSV.parent.mkdir(parents=True, exist_ok=True)
     LIQUID_UNIVERSE_CSV.write_text(content, encoding="utf-8")
     if changed:
         UNIVERSE_HISTORY_DIR.mkdir(parents=True, exist_ok=True)
         (UNIVERSE_HISTORY_DIR / f"{date.today().isoformat()}.csv").write_text(content, encoding="utf-8")
-    return ranked
+    return ranked_out
 
 
 def load_liquid_universe() -> pd.DataFrame:
