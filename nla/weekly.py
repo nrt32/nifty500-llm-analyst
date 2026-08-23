@@ -1,5 +1,5 @@
 import sys
-from datetime import date
+from datetime import date, datetime, timedelta, timezone
 
 import pandas as pd
 
@@ -12,12 +12,13 @@ from nla.sector import load_sector_map, refresh_sector_map, relative_strength
 from nla.site import build_site
 from nla.universe import load_active_symbols
 
+IST = timezone(timedelta(hours=5, minutes=30))
 TOP_N = 30
 
 
-def week_slug(ref: date | None = None) -> str:
-    d = ref or date.today()
-    iso_year, iso_week, _ = d.isocalendar()
+def week_slug(ref: datetime | None = None) -> str:
+    moment = ref or datetime.now(IST)
+    iso_year, iso_week, _ = moment.date().isocalendar()
     return f"{iso_year}-W{iso_week:02d}"
 
 
