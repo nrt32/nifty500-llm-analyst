@@ -93,7 +93,7 @@ def fetch_yahoo_close(symbols: list[str], start: date, end: date) -> pd.DataFram
             continue
         if data is None or data.empty or "Close" not in data.columns:
             continue
-        close = data["Close"]
+        close = data["Close"].copy()
         if isinstance(close, pd.Series):
             close = close.to_frame(name=chunk[0])
         idx_name = close.index.name or "date"

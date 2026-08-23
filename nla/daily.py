@@ -5,6 +5,7 @@ from datetime import date, datetime, timedelta, timezone
 import pandas as pd
 
 from nla.config import DATA_DIR, REPORTS_DIR, UNIVERSE_CSV
+from nla.history import CLOSE_PARQUET, refresh_from_daily
 from nla.ingest import day_path, update_day
 from nla.report import write_report
 from nla.universe import refresh_universe
@@ -45,7 +46,7 @@ def repair_recent(window: int = REPAIR_WINDOW_DAYS) -> list[str]:
     return repaired
 
 
-def render_daily_report(target: date, refreshed: bool, price_source: str, repaired: list[str]) -> str:
+def render_daily_report(target: date, refreshed: bool, price_source: str, repaired: list[str], history_rows: int | None = None) -> str:
     lines = [
         f"# Daily Scan {target.isoformat()}",
         "",
@@ -56,6 +57,8 @@ def render_daily_report(target: date, refreshed: bool, price_source: str, repair
         f"| Price source | {SOURCE_LABELS.get(price_source, price_source)} |",
         f"| Backfilled | {', '.join(repaired) if repaired else 'nothing pending'} |",
     ]
+    if history_rows is not None:
+        lines.append(f"| Close history rows | {history_rows} |")
     path = day_path(target)
     if path.exists():
         try:
@@ -76,16 +79,23 @@ def main() -> int:
         return 2
     price_source = update_day(target)
     repaired = repair_recent()
+    history_rows: int | None = None
+    if CLOSE_PARQUET.exists():
+        try:
+            history_rows = len(refresh_from_daily())
+        except Exception:
+            history_rows = None
     payload = {
         "date": target.isoformat(),
         "universe_refreshed": refreshed,
         "price_source": price_source,
         "repaired": repaired,
+        "history_rows": history_rows,
     }
     (DATA_DIR / "status.json").write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
     write_report(
         REPORTS_DIR / "daily" / f"{target.isoformat()}.md",
-        render_daily_report(target, refreshed, price_source, repaired),
+        render_daily_report(target, refreshed, price_source, repaired, history_rows),
     )
     print(json.dumps(payload))
     if price_source == "missing-universe":
