@@ -62,6 +62,13 @@ Membership snapshots are archived under `data/reference/universe_history/` whene
 
 NSE blocks most cloud/datacenter IPs. If bhavcopy ever hard-fails from runner IPs, capture the workflow logs — known upgrade path is `BennyThadikaran/NseIndiaApi` server mode.
 
+### Sources evaluated & rejected (tested Aug 2026)
+
+- **BSE**: legacy bhavcopy zip serves homepage HTML; UDiFF CSV 404; `api.bseindia.com` endpoints hostile even with browser headers. Do not revisit without a specific unmet need.
+- **Moneycontrol**: RSS feeds Akamai-blocked (Access Denied/403). Rejected; fundamentals stay on screener.in.
+- **News context for LLM memos**: Google News RSS (`news.google.com/rss/search?q=...`) — validated working, no key, adopted for Phase 2.
+- **Corporate announcements / bulk deals (Phase 4)**: planned path is `NseIndiaApi` server mode against NSE, not BSE scraping.
+
 ## Fundamentals source
 
 `nla/fundamentals.py` scrapes company pages from screener.in (robots.txt permits `/company/*`; locked decision accepts ToS-gray with aggressive caching):
