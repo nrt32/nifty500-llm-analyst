@@ -1,4 +1,6 @@
+import contextlib
 import io
+import logging
 from datetime import date, timedelta
 from pathlib import Path
 
@@ -70,20 +72,23 @@ def fetch_bhavcopy(d: date) -> pd.DataFrame | None:
 
 def fetch_yahoo_close(symbols: list[str], start: date, end: date) -> pd.DataFrame:
     empty = pd.DataFrame(columns=["symbol", "date", "close"])
+    logging.getLogger("yfinance").disabled = True
     tickers = [f"{s}.NS" for s in symbols]
     frames: list[pd.DataFrame] = []
     for i in range(0, len(tickers), 100):
         chunk = tickers[i : i + 100]
+        noise = io.StringIO()
         try:
-            data = yf.download(
-                tickers=chunk,
-                start=start.isoformat(),
-                end=(end + timedelta(days=1)).isoformat(),
-                interval="1d",
-                progress=False,
-                threads=False,
-                auto_adjust=False,
-            )
+            with contextlib.redirect_stdout(noise), contextlib.redirect_stderr(noise):
+                data = yf.download(
+                    tickers=chunk,
+                    start=start.isoformat(),
+                    end=(end + timedelta(days=1)).isoformat(),
+                    interval="1d",
+                    progress=False,
+                    threads=False,
+                    auto_adjust=False,
+                )
         except Exception:
             continue
         if data is None or data.empty or "Close" not in data.columns:

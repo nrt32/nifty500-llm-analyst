@@ -39,7 +39,7 @@ announcements ┘            sector relative strength     sector-cycle stage
 
 | Workflow | Cron (UTC) | IST | Does |
 |---|---|---|---|
-| `daily-scan` | `45 13 * * 1-5` | 19:15 Mon–Fri | refresh universe, ingest last trading day, commit parquet + status |
+| `daily-scan` | `45 13 * * 1-5` | 19:15 Mon–Fri | refresh universe, ingest last trading day, commit parquet + status; writes a human-readable status page to `reports/daily/` (published to Pages on the next Sunday build) |
 | `weekly-review` | `30 3 * * 0` | 09:00 Sun | weekly report → `reports/weekly/`, build + deploy Pages site |
 | `backfill` | manual | manual | repair a date range (`start`/`end` dispatch inputs) |
 
