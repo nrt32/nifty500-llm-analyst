@@ -86,18 +86,30 @@ def render_screen(slug: str, mom: pd.DataFrame, rs: pd.DataFrame, hist: pd.DataF
         )
     lines += [
         "",
-        "## Paper ledger",
+        "## Paper ledger (shadow validation)",
         "",
         "| Field | Value |",
         "| --- | --- |",
         f"| Open shadow positions | {stats['open']} |",
         f"| Total logged entries | {stats['total']} |",
         f"| Weeks logged | {stats['weeks']} |",
+        f"| Awaiting next-open fill | {stats.get('pending_exec', 0)} |",
+        f"| Filled at next-session open | {stats.get('settled', 0)} |",
         f"| Entries added this run | {added} |",
         "",
-        "---",
-        "_Not investment advice. "
-        "Factor ranks are descriptive, not recommendations; score engine and risk rules land in Phase 3._",
+        "Tranches are recorded at signal-day close for research purity; the daily run then fills each row's "
+        "`exec_price` at the NEXT session's open, which is what a human acting on this report could actually get. "
+        "Treat the Top 30 as a watchlist for the coming sessions, not as fills. Exits/stops arrive with the Phase 3 engine.",
+        "",
+        "## How to read this report",
+        "",
+        "- **Sector RS**: equal-weight sector baskets vs whole-universe average return over 21/63/126d; "
+        "RS Score = mean percentile rank of excess returns. Covers only NSE-sector-index members (~188 names); "
+        "these 14 lists are not India's full industry taxonomy and overlap.",
+        "- **Momentum Score**: mean cross-sectional percentile of a stock's 21d/63d/126d total returns (0-100). "
+        "Windows skipped below minimum history gates; very recent listings may be absent entirely.",
+        "- **Prices are unadjusted closes** from NSE bhavcopy / Yahoo; dividend adjustments are not applied.",
+        "- Deterministic factors only - no LLM input yet. Nothing here is investment advice.",
     ]
     return "\n".join(lines) + "\n"
 

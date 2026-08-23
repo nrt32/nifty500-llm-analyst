@@ -7,6 +7,7 @@ import pandas as pd
 from nla.config import DATA_DIR, REPORTS_DIR, UNIVERSE_CSV, UNIVERSE_MODE, UNIVERSE_SIZE
 from nla.history import CLOSE_PARQUET, refresh_from_daily
 from nla.ingest import day_path, update_day
+from nla.ledger import settle_pending_entries
 from nla.report import write_report
 from nla.universe import LIQUID_UNIVERSE_CSV, build_liquid_universe, refresh_universe
 
@@ -46,7 +47,7 @@ def repair_recent(window: int = REPAIR_WINDOW_DAYS) -> list[str]:
     return repaired
 
 
-def render_daily_report(target: date, refreshed: bool, price_source: str, repaired: list[str], history_rows: int | None = None, liquid_n: int | None = None) -> str:
+def render_daily_report(target: date, refreshed: bool, price_source: str, repaired: list[str], history_rows: int | None = None, liquid_n: int | None = None, ledger_settled: int | None = None) -> str:
     lines = [
         f"# Daily Scan {target.isoformat()}",
         "",
@@ -59,6 +60,8 @@ def render_daily_report(target: date, refreshed: bool, price_source: str, repair
     ]
     if liquid_n is not None:
         lines.append(f"| Liquid universe size | {liquid_n} |")
+    if ledger_settled is not None:
+        lines.append(f"| Ledger tranches settled at next open | {ledger_settled} |")
     if history_rows is not None:
         lines.append(f"| Close history rows | {history_rows} |")
     path = day_path(target)
@@ -86,6 +89,10 @@ def main() -> int:
             pass
     price_source = update_day(target)
     repaired = repair_recent()
+    try:
+        ledger_settled = settle_pending_entries(target.isoformat())
+    except Exception:
+        ledger_settled = 0
     liquid_n: int | None = None
     if UNIVERSE_MODE == "liquid":
         try:
@@ -105,11 +112,12 @@ def main() -> int:
         "repaired": repaired,
         "history_rows": history_rows,
         "liquid_universe": liquid_n,
+        "ledger_settled": ledger_settled,
     }
     (DATA_DIR / "status.json").write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
     write_report(
         REPORTS_DIR / "daily" / f"{target.isoformat()}.md",
-        render_daily_report(target, refreshed, price_source, repaired, history_rows, liquid_n),
+        render_daily_report(target, refreshed, price_source, repaired, history_rows, liquid_n, ledger_settled),
     )
     print(json.dumps(payload))
     if price_source == "missing-universe":
