@@ -62,6 +62,15 @@ Membership snapshots are archived under `data/reference/universe_history/` whene
 
 NSE blocks most cloud/datacenter IPs. If bhavcopy ever hard-fails from runner IPs, capture the workflow logs — known upgrade path is `BennyThadikaran/NseIndiaApi` server mode.
 
+## Fundamentals source
+
+`nla/fundamentals.py` scrapes company pages from screener.in (robots.txt permits `/company/*`; locked decision accepts ToS-gray with aggressive caching):
+
+- Disk cache `data/fundamentals/<SYMBOL>.json`, TTL 30 days (data is quarterly); 2s polite delay between live fetches
+- Extracted today: market cap, price, stock P/E, book value, dividend yield, ROCE, ROE, face value
+- Known gaps: debt-to-equity no longer present in the page's ratio strip — derive from Balance Sheet (borrowings ÷ equity+reserves) when quality factors land; bank/non-financial separation needed since ROCE is meaningless for lenders
+- Full-universe refresh cost at N=1000: ~35 min/month at polite delay — run manually or as a monthly dispatch job, never per-week
+
 ## Paper ledger
 
 Every weekly run logs the screen's top 20 as hypothetical long entries into `data/ledger/paper_ledger.csv` (append-only, one tranche per ISO week, idempotent on reruns). Rows stay `open` until the Phase 3 score engine defines stops and exits; monthly scoring against the Nifty 500 TRI benchmark lands with Phase 5. This starts the 3–6 month shadow-validation clock from the first logged week.

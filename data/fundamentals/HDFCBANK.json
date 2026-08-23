@@ -1,0 +1,16 @@
+{
+  "symbol": "HDFCBANK",
+  "fetched_at": "2026-08-23T20:19:22.114128+00:00",
+  "source_url": "https://www.screener.in/company/HDFCBANK/consolidated/",
+  "metrics": {
+    "market cap": 1120311.0,
+    "current price": 727.0,
+    "high / low": 1020.0,
+    "stock p/e": 14.2,
+    "book value": 390.0,
+    "dividend yield": 1.79,
+    "roce": 7.02,
+    "roe": 13.6,
+    "face value": 1.0
+  }
+}

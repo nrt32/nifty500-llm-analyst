@@ -1,0 +1,16 @@
+{
+  "symbol": "WELCORP",
+  "fetched_at": "2026-08-23T20:19:24.274048+00:00",
+  "source_url": "https://www.screener.in/company/WELCORP/consolidated/",
+  "metrics": {
+    "market cap": 60986.0,
+    "current price": 2312.0,
+    "high / low": 2349.0,
+    "stock p/e": 26.4,
+    "book value": 347.0,
+    "dividend yield": 0.22,
+    "roce": 22.9,
+    "roe": 19.4,
+    "face value": 5.0
+  }
+}
