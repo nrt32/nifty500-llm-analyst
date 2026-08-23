@@ -6,6 +6,7 @@ import pandas as pd
 from nla.config import REPORTS_DIR
 from nla.factors import momentum_ranks
 from nla.history import load_close_history, refresh_from_daily
+from nla.ledger import ledger_stats, log_weekly_entries
 from nla.report import write_report
 from nla.sector import load_sector_map, refresh_sector_map, relative_strength
 from nla.site import build_site
@@ -26,7 +27,7 @@ def _pct(x: float) -> str:
     return f"{x * 100:+.1f}%"
 
 
-def render_screen(slug: str, mom: pd.DataFrame, rs: pd.DataFrame, hist: pd.DataFrame, smap: pd.DataFrame) -> str:
+def render_screen(slug: str, mom: pd.DataFrame, rs: pd.DataFrame, hist: pd.DataFrame, smap: pd.DataFrame, stats: dict[str, int], added: int) -> str:
     first, last = hist["date"].min(), hist["date"].max()
     covered = len(smap)
     sym_sector = dict(zip(smap["symbol"], smap["sector"]))
@@ -84,6 +85,15 @@ def render_screen(slug: str, mom: pd.DataFrame, rs: pd.DataFrame, hist: pd.DataF
         )
     lines += [
         "",
+        "## Paper ledger",
+        "",
+        "| Field | Value |",
+        "| --- | --- |",
+        f"| Open shadow positions | {stats['open']} |",
+        f"| Total logged entries | {stats['total']} |",
+        f"| Weeks logged | {stats['weeks']} |",
+        f"| Entries added this run | {added} |",
+        "",
         "---",
         "_Not investment advice. "
         "Factor ranks are descriptive, not recommendations; score engine and risk rules land in Phase 3._",
@@ -110,9 +120,13 @@ def main() -> int:
     smap = load_sector_map()
     mom = momentum_ranks(hist)
     rs = relative_strength(hist, smap)
-    write_report(REPORTS_DIR / "weekly" / f"{slug}.md", render_screen(slug, mom, rs, hist, smap))
+    try:
+        added, _created = log_weekly_entries(mom, smap, slug, str(hist["date"].max()))
+    except Exception:
+        added = -1
+    write_report(REPORTS_DIR / "weekly" / f"{slug}.md", render_screen(slug, mom, rs, hist, smap, ledger_stats(), added))
     pages = build_site()
-    print(f"weekly screen written: reports/weekly/{slug}.md (site pages: {pages})")
+    print(f"weekly screen written: reports/weekly/{slug}.md (ledger +{added}, site pages: {pages})")
     return 0
 
 

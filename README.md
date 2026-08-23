@@ -62,6 +62,10 @@ Membership snapshots are archived under `data/reference/universe_history/` whene
 
 NSE blocks most cloud/datacenter IPs. If bhavcopy ever hard-fails from runner IPs, capture the workflow logs — known upgrade path is `BennyThadikaran/NseIndiaApi` server mode.
 
+## Paper ledger
+
+Every weekly run logs the screen's top 20 as hypothetical long entries into `data/ledger/paper_ledger.csv` (append-only, one tranche per ISO week, idempotent on reruns). Rows stay `open` until the Phase 3 score engine defines stops and exits; monthly scoring against the Nifty 500 TRI benchmark lands with Phase 5. This starts the 3–6 month shadow-validation clock from the first logged week.
+
 ## Security model
 
 - Public repo ⇒ zero secrets in code or git history, ever.
