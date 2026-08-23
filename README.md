@@ -28,8 +28,8 @@ announcements ┘            sector relative strength     sector-cycle stage
 
 | Phase | Scope | Status |
 |---|---|---|
-| 0 | Ingestion skeleton + CI workflows | current |
-| 1 | Factor engine + sector RS + plain weekly screen (no LLM) | planned |
+| 0 | Ingestion skeleton + CI workflows | done |
+| 1 | Factor engine + sector RS + weekly quant screen (no LLM) | current |
 | 2 | LLM analyst memos (`nla/llm_client.py`, opencode Zen / Gemini) | planned |
 | 3 | Score engine, vol-targeted sizing, stops, conflict flags, paper ledger | planned |
 | 4 | Sector-cycle classifier + dynamic event watchlist | planned |

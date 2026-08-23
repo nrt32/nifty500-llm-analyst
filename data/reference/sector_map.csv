@@ -1,0 +1,189 @@
+symbol,sector,industry
+ASHOKLEY,auto,Capital Goods
+BAJAJ-AUTO,auto,Automobile and Auto Components
+BHARATFORG,auto,Automobile and Auto Components
+BOSCHLTD,auto,Automobile and Auto Components
+EICHERMOT,auto,Automobile and Auto Components
+EXIDEIND,auto,Automobile and Auto Components
+HEROMOTOCO,auto,Automobile and Auto Components
+M&M,auto,Automobile and Auto Components
+MARUTI,auto,Automobile and Auto Components
+MOTHERSON,auto,Automobile and Auto Components
+SONACOMS,auto,Automobile and Auto Components
+TIINDIA,auto,Automobile and Auto Components
+TMPV,auto,Automobile and Auto Components
+TVSMOTOR,auto,Automobile and Auto Components
+UNOMINDA,auto,Automobile and Auto Components
+AUBANK,bank,Financial Services
+AXISBANK,bank,Financial Services
+FEDERALBNK,bank,Financial Services
+HDFCBANK,bank,Financial Services
+ICICIBANK,bank,Financial Services
+IDFCFIRSTB,bank,Financial Services
+INDUSINDBK,bank,Financial Services
+KOTAKBANK,bank,Financial Services
+YESBANK,bank,Financial Services
+ABB,energy,Capital Goods
+ADANIENSOL,energy,Power
+ADANIPOWER,energy,Power
+BHEL,energy,Capital Goods
+CESC,energy,Power
+COALINDIA,energy,Oil Gas & Consumable Fuels
+ENRIN,energy,Capital Goods
+GVT&D,energy,Capital Goods
+INOXWIND,energy,Capital Goods
+JPPOWER,energy,Power
+JSWENERGY,energy,Power
+NAVA,energy,Power
+NHPC,energy,Power
+NLCINDIA,energy,Power
+NTPCGREEN,energy,Power
+POWERINDIA,energy,Capital Goods
+RPOWER,energy,Power
+SIEMENS,energy,Capital Goods
+SJVN,energy,Power
+THERMAX,energy,Capital Goods
+TORNTPOWER,energy,Power
+BAJAJFINSV,financial_services,Financial Services
+BAJFINANCE,financial_services,Financial Services
+BSE,financial_services,Financial Services
+CHOLAFIN,financial_services,Financial Services
+HDFCLIFE,financial_services,Financial Services
+ICICIGI,financial_services,Financial Services
+JIOFIN,financial_services,Financial Services
+LICHSGFIN,financial_services,Financial Services
+MFSL,financial_services,Financial Services
+MUTHOOTFIN,financial_services,Financial Services
+PFC,financial_services,Financial Services
+RECLTD,financial_services,Financial Services
+SBICARD,financial_services,Financial Services
+SBILIFE,financial_services,Financial Services
+SHRIRAMFIN,financial_services,Financial Services
+BRITANNIA,fmcg,Fast Moving Consumer Goods
+COLPAL,fmcg,Fast Moving Consumer Goods
+DABUR,fmcg,Fast Moving Consumer Goods
+EMAMILTD,fmcg,Fast Moving Consumer Goods
+GODREJCP,fmcg,Fast Moving Consumer Goods
+HINDUNILVR,fmcg,Fast Moving Consumer Goods
+ITC,fmcg,Fast Moving Consumer Goods
+MARICO,fmcg,Fast Moving Consumer Goods
+NESTLEIND,fmcg,Fast Moving Consumer Goods
+PATANJALI,fmcg,Fast Moving Consumer Goods
+RADICO,fmcg,Fast Moving Consumer Goods
+TATACONSUM,fmcg,Fast Moving Consumer Goods
+UBL,fmcg,Fast Moving Consumer Goods
+UNITDSPR,fmcg,Fast Moving Consumer Goods
+VBL,fmcg,Fast Moving Consumer Goods
+APOLLOHOSP,healthcare,Healthcare
+FORTIS,healthcare,Healthcare
+MAXHEALTH,healthcare,Healthcare
+SYNGENE,healthcare,Healthcare
+ADANIGREEN,infra,Power
+ADANIPORTS,infra,Services
+AMBUJACEM,infra,Construction Materials
+BHARTIARTL,infra,Telecommunication
+BPCL,infra,Oil Gas & Consumable Fuels
+CGPOWER,infra,Capital Goods
+CUMMINSIND,infra,Capital Goods
+GAIL,infra,Oil Gas & Consumable Fuels
+GRASIM,infra,Construction Materials
+HINDPETRO,infra,Oil Gas & Consumable Fuels
+INDHOTEL,infra,Consumer Services
+INDIGO,infra,Services
+INDUSTOWER,infra,Telecommunication
+IOC,infra,Oil Gas & Consumable Fuels
+LT,infra,Construction
+NTPC,infra,Power
+ONGC,infra,Oil Gas & Consumable Fuels
+POWERGRID,infra,Power
+RELIANCE,infra,Oil Gas & Consumable Fuels
+SHREECEM,infra,Construction Materials
+SUZLON,infra,Capital Goods
+TATAPOWER,infra,Power
+ULTRACEMCO,infra,Construction Materials
+COFORGE,it,Information Technology
+HCLTECH,it,Information Technology
+INFY,it,Information Technology
+LTM,it,Information Technology
+MPHASIS,it,Information Technology
+OFSS,it,Information Technology
+PERSISTENT,it,Information Technology
+TCS,it,Information Technology
+TECHM,it,Information Technology
+WIPRO,it,Information Technology
+DBCORP,media,Media Entertainment & Publication
+HATHWAY,media,Media Entertainment & Publication
+NAZARA,media,Media Entertainment & Publication
+NETWORK18,media,Media Entertainment & Publication
+PFOCUS,media,Media Entertainment & Publication
+PVRINOX,media,Media Entertainment & Publication
+SAREGAMA,media,Media Entertainment & Publication
+SUNTV,media,Media Entertainment & Publication
+TIPSMUSIC,media,Media Entertainment & Publication
+ZEEL,media,Media Entertainment & Publication
+ADANIENT,metal,Metals & Mining
+APLAPOLLO,metal,Capital Goods
+HINDALCO,metal,Metals & Mining
+HINDCOPPER,metal,Metals & Mining
+HINDZINC,metal,Metals & Mining
+JINDALSTEL,metal,Metals & Mining
+JSL,metal,Metals & Mining
+JSWSTEEL,metal,Metals & Mining
+LLOYDSME,metal,Metals & Mining
+NATIONALUM,metal,Metals & Mining
+NMDC,metal,Metals & Mining
+SAIL,metal,Metals & Mining
+TATASTEEL,metal,Metals & Mining
+VEDL,metal,Metals & Mining
+WELCORP,metal,Capital Goods
+AEGISLOG,oil_gas,Oil Gas & Consumable Fuels
+AEGISVOPAK,oil_gas,Oil Gas & Consumable Fuels
+ATGL,oil_gas,Oil Gas & Consumable Fuels
+CASTROLIND,oil_gas,Oil Gas & Consumable Fuels
+CHENNPETRO,oil_gas,Oil Gas & Consumable Fuels
+IGL,oil_gas,Oil Gas & Consumable Fuels
+MGL,oil_gas,Oil Gas & Consumable Fuels
+OIL,oil_gas,Oil Gas & Consumable Fuels
+PETRONET,oil_gas,Oil Gas & Consumable Fuels
+ABBOTINDIA,pharma,Healthcare
+AJANTPHARM,pharma,Healthcare
+ALKEM,pharma,Healthcare
+AUROPHARMA,pharma,Healthcare
+BIOCON,pharma,Healthcare
+CIPLA,pharma,Healthcare
+DIVISLAB,pharma,Healthcare
+DRREDDY,pharma,Healthcare
+GLAND,pharma,Healthcare
+GLENMARK,pharma,Healthcare
+IPCALAB,pharma,Healthcare
+LAURUSLABS,pharma,Healthcare
+LUPIN,pharma,Healthcare
+MANKIND,pharma,Healthcare
+PPLPHARMA,pharma,Healthcare
+SAILIFE,pharma,Healthcare
+SUNPHARMA,pharma,Healthcare
+TORNTPHARM,pharma,Healthcare
+WOCKPHARMA,pharma,Healthcare
+ZYDUSLIFE,pharma,Healthcare
+BANKBARODA,psu_bank,Financial Services
+BANKINDIA,psu_bank,Financial Services
+CANBK,psu_bank,Financial Services
+CENTRALBK,psu_bank,Financial Services
+INDIANB,psu_bank,Financial Services
+IOB,psu_bank,Financial Services
+MAHABANK,psu_bank,Financial Services
+PNB,psu_bank,Financial Services
+PSB,psu_bank,Financial Services
+SBIN,psu_bank,Financial Services
+UCOBANK,psu_bank,Financial Services
+UNIONBANK,psu_bank,Financial Services
+ABREL,realty,Realty
+ANANTRAJ,realty,Realty
+BRIGADE,realty,Realty
+DLF,realty,Realty
+GODREJPROP,realty,Realty
+LODHA,realty,Realty
+OBEROIRLTY,realty,Realty
+PHOENIXLTD,realty,Realty
+PRESTIGE,realty,Realty
+SOBHA,realty,Realty
