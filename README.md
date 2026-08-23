@@ -29,11 +29,19 @@ announcements ┘            sector relative strength     sector-cycle stage
 | Phase | Scope | Status |
 |---|---|---|
 | 0 | Ingestion skeleton + CI workflows | done |
-| 1 | Factor engine + sector RS + weekly quant screen (no LLM) | current |
-| 2 | LLM analyst memos (`nla/llm_client.py`, opencode Zen / Gemini) | planned |
-| 3 | Score engine, vol-targeted sizing, stops, conflict flags, paper ledger | planned |
-| 4 | Sector-cycle classifier + dynamic event watchlist | planned |
-| 5 | Tune weights from paper results; execution stays out of scope | planned |
+| 1 | Factor engine + sector RS + weekly quant screen (no LLM) | done |
+| 2 | LLM analyst memos (`nla/llm_client.py` + `nla/memos.py`, opencode Zen / Gemini) | done |
+| 3 | Score engine, vol-targeted sizing, stops, conflict flags, paper ledger | done (v1) |
+| 4 | Sector-cycle stage labels + event watchlist (52w-high/volume); announcements via NseIndiaApi later | partial |
+| 5 | Tune weights from paper results (monthly scorecard harness ready) | awaiting data |
+
+## LLM analyst layer
+
+`nla/llm_client.py` is provider-agnostic via env (`NLA_LLM_PROVIDER`=opencode\|gemini, model names, base URL, keys). The weekly run builds structured packets (momentum stats, sector RS rank, cached screener ratios, Google News RSS headlines) for the top 10 names and requests strict-JSON memos (stance, conviction 0-100, thesis, risks), cached under `data/memos/<week>/`. Without a key the step skips gracefully and the engine runs quant-only. Where quant and LLM conviction diverge by >= 30 points the candidate is flagged **HUMAN_REVIEW** and routed to `reports/review/<week>.md` instead of receiving a weight - conflicts are never auto-resolved.
+
+## Score engine & risk rules
+
+`nla/engine.py`: final = blend(0.65 x quant + 0.35 x LLM conviction when present) x sector-cycle multiplier (0.92-1.05 from RS percentile) x penalties (ROCE<8 -> x0.93, P/E>60 -> x0.95, <130 sessions -> x0.92). Sizing is volatility-targeted (inverse mean absolute daily move over 21d), normalized to 100%, capped at 10%/position, 30%/mapped sector, 20 positions max. Stops = 2x mean daily move over 14d clamped to 8-20%; armed when a tranche settles and checked against daily lows by `check_stop_exits()` in the daily run. Monthly `python -m nla.scorecard` (workflow: monthly-scorecard) scores ledger tranches vs the equal-weight universe benchmark on both signal and execution bases.
 
 ## Scheduling (GitHub Actions)
 

@@ -1,0 +1,41 @@
+name: monthly-scorecard
+
+on:
+  schedule:
+    - cron: "30 3 1 * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: scorecard
+  cancel-in-progress: false
+
+jobs:
+  scorecard:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+          cache: pip
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+      - name: Build scorecard
+        run: python -m nla.scorecard
+      - name: Commit and push scorecard
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data || true
+          git add reports || true
+          if git diff --cached --quiet; then
+            echo "No changes to commit"
+            exit 0
+          fi
+          git commit -m "scorecard: monthly paper results [skip ci]"
+          git pull --rebase origin "$GITHUB_REF_NAME"
+          git push

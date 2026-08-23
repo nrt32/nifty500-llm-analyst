@@ -113,6 +113,22 @@ def cycle_stage(macro: pd.DataFrame, flows: pd.DataFrame) -> str:
     raise NotImplementedError("Phase 4")
 
 
+def cycle_stage_label(ret_21d, ret_63d, ret_126d) -> str:
+    vals = [ret_21d, ret_63d, ret_126d]
+    if any(v is None or pd.isna(v) for v in vals):
+        return "-"
+    r21, r63, r126 = float(ret_21d), float(ret_63d), float(ret_126d)
+    if r21 > 0 and r63 > 0 and r126 > 0:
+        return "Leading"
+    if r63 > 0 and r126 > 0:
+        return "Pullback"
+    if r63 < 0 and r126 > 0:
+        return "Weakening"
+    if r63 > 0 and r126 < 0:
+        return "Improving"
+    return "Lagging"
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(prog="sector")
     parser.parse_args(argv)
