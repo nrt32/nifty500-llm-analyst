@@ -74,7 +74,9 @@ def get_memo(
     path = _cache_path(week, symbol)
     if path.exists() and not refresh:
         try:
-            return json.loads(path.read_text(encoding="utf-8"))
+            cached = json.loads(path.read_text(encoding="utf-8"))
+            if "error" not in cached:
+                return cached
         except Exception:
             pass
     if not llm_client.available():

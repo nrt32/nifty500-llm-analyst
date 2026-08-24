@@ -1,4 +1,5 @@
 import json
+import re
 import sys
 
 import requests
@@ -11,6 +12,8 @@ from nla.config import (
     OPENCODE_API_KEY,
     OPENCODE_BASE_URL,
 )
+
+GEMINI_FALLBACK_MODELS = ["gemini-flash-latest", "gemini-2.5-flash"]
 
 
 class LLMUnavailable(Exception):
@@ -35,11 +38,9 @@ def _call_opencode(prompt: str, timeout: int = 90) -> str:
     return str(resp.json()["choices"][0]["message"]["content"])
 
 
-def _call_gemini(prompt: str, timeout: int = 90) -> str:
-    if not GEMINI_API_KEY:
-        raise LLMUnavailable("GEMINI_API_KEY not set")
-    resp = requests.post(
-        f"https://generativelanguage.googleapis.com/v1beta/models/{GEMINI_MODEL}:generateContent",
+def _gemini_post(model: str, prompt: str, timeout: int) -> requests.Response:
+    return requests.post(
+        f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent",
         params={"key": GEMINI_API_KEY},
         headers={"Content-Type": "application/json"},
         json={
@@ -48,10 +49,29 @@ def _call_gemini(prompt: str, timeout: int = 90) -> str:
         },
         timeout=timeout,
     )
-    if resp.status_code >= 400:
-        raise LLMUnavailable(f"gemini {resp.status_code}: {resp.text[:300]}")
-    parts = resp.json()["candidates"][0]["content"]["parts"]
-    return "".join(str(p.get("text", "")) for p in parts)
+
+
+def _call_gemini(prompt: str, timeout: int = 90) -> str:
+    if not GEMINI_API_KEY:
+        raise LLMUnavailable("GEMINI_API_KEY not set")
+    candidates = [GEMINI_MODEL] + [m for m in GEMINI_FALLBACK_MODELS if m != GEMINI_MODEL]
+    last_error = ""
+    i = 0
+    while i < len(candidates):
+        model = candidates[i]
+        resp = _gemini_post(model, prompt, timeout)
+        if resp.status_code < 400:
+            parts = resp.json()["candidates"][0]["content"]["parts"]
+            return "".join(str(p.get("text", "")) for p in parts)
+        last_error = f"gemini {model} {resp.status_code}: {resp.text[:200]}"
+        if resp.status_code == 404:
+            suggestion = re.search(r"use (models/[a-z0-9.\-]+)", resp.text)
+            if suggestion and suggestion.group(1).removeprefix("models/") not in candidates:
+                candidates.insert(i + 1, suggestion.group(1).removeprefix("models/"))
+            i += 1
+            continue
+        break
+    raise LLMUnavailable(last_error or "gemini exhausted fallbacks")
 
 
 def available() -> bool:

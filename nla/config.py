@@ -23,7 +23,7 @@ def env(name: str, default: str | None = None) -> str | None:
 
 LLM_PROVIDER = env("NLA_LLM_PROVIDER", "opencode")
 MODEL = env("NLA_MODEL", "deepseek-v4-flash-free")
-GEMINI_MODEL = env("NLA_GEMINI_MODEL", "gemini-2.0-flash")
+GEMINI_MODEL = env("NLA_GEMINI_MODEL", "gemini-flash-latest")
 OPENCODE_BASE_URL = env("OPENCODE_BASE_URL", "https://opencode.ai/zen/v1")
 OPENCODE_API_KEY = env("OPENCODE_API_KEY")
 GEMINI_API_KEY = env("GEMINI_API_KEY")
