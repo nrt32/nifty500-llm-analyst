@@ -73,6 +73,7 @@ def evaluate(
         quant = float(r["quant_score"])
         if conviction is None:
             blended = quant
+            flags.append("")
         else:
             blended = BLEND_QUANT_W * quant + BLEND_LLM_W * conviction
             gap = abs(quant - conviction)
@@ -97,7 +98,7 @@ def evaluate(
     out["llm_conviction"] = convictions
     out["llm_stance"] = stances
     out["blended_score"] = [round(b, 1) for b in blends]
-    out["flag"] = ["HUMAN_REVIEW" if f else "" for f in flags] if flags else ""
+    out["flag"] = flags
     out["final_score"] = [round(b * m, 1) for b, m in zip(blends, mults)]
     out["cycle_mult"] = mults
     out["stop_pct"] = stops
