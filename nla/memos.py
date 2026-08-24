@@ -24,13 +24,45 @@ def _recent_news(symbol: str, limit: int = 5) -> list[str]:
         return []
 
 
+TT_PACKET_KEYS = [
+    "tt_gics_sector",
+    "tt_gics_industry",
+    "tt_debt_to_equity",
+    "tt_performance_tag",
+    "tt_valuation_tag",
+    "tt_growth_tag",
+    "tt_profitability_tag",
+    "tt_red_flags_tag",
+    "tt_entry_point_tag",
+    "tt_roe",
+    "tt_pe",
+    "tt_ttmPe",
+    "tt_pb",
+    "tt_divYield",
+    "tt_eps",
+    "tt_52wHigh",
+    "tt_52wpct",
+    "tt_beta",
+    "tt_indpe",
+    "tt_indpb",
+    "tt_marketCap",
+]
+
+
 def _packet(symbol: str, mom_row, sector: str, rs_rank: int | None, fundamentals: dict | None) -> dict:
     metrics = {}
+    tt = {}
     if fundamentals:
         m = fundamentals.get("metrics", {})
         for k in ("roce", "roe", "stock p/e", "book value", "dividend yield"):
             if k in m:
                 metrics[k] = m[k]
+        tp = fundamentals.get("tickertape", {})
+        tt = {k: tp[k] for k in TT_PACKET_KEYS if k in tp}
+        tt["income_period"] = tp.get("tt_income_period")
+        for k, v in tp.items():
+            if k.startswith("inc") and isinstance(v, (int, float)):
+                tt[k] = v
     return {
         "symbol": symbol,
         "sector": sector or "unmapped",
@@ -42,6 +74,7 @@ def _packet(symbol: str, mom_row, sector: str, rs_rank: int | None, fundamentals
         "momentum_score": float(mom_row["momentum_score"]),
         "history_sessions": int(mom_row["obs"]),
         "fundamentals": metrics,
+        "tickertape": tt,
         "recent_news_headlines": _recent_news(symbol),
     }
 
@@ -130,8 +163,18 @@ def main(argv: list[str] | None = None) -> int:
     smap = load_sector_map()
     sym_sector = dict(zip(smap["symbol"], smap["sector"]))
     ok = skip = fail = 0
-    for _, row in mom.iterrows():
-        memo = get_memo(row["symbol"], row, sym_sector.get(row["symbol"]), None, args.week)
+    for i, (_, row) in enumerate(mom.iterrows()):
+        if i:
+            time.sleep(2.0)
+        symbol = str(row["symbol"])
+        fund_path = DATA_DIR / "fundamentals" / f"{symbol.upper()}.json"
+        fund = None
+        if fund_path.exists():
+            try:
+                fund = json.loads(fund_path.read_text(encoding="utf-8"))
+            except Exception:
+                fund = None
+        memo = get_memo(symbol, row, sym_sector.get(symbol), None, args.week, fundamentals=fund)
         if memo is None:
             skip += 1
         elif "error" in memo:

@@ -79,12 +79,12 @@ NSE blocks most cloud/datacenter IPs. If bhavcopy ever hard-fails from runner IP
 
 ## Fundamentals source
 
-`nla/fundamentals.py` scrapes company pages from screener.in (robots.txt permits `/company/*`; locked decision accepts ToS-gray with aggressive caching):
+Two robots-permitted, keyless sources feed `data/fundamentals/<SYMBOL>.json`:
 
-- Disk cache `data/fundamentals/<SYMBOL>.json`, TTL 30 days (data is quarterly); 2s polite delay between live fetches
-- Extracted today: market cap, price, stock P/E, book value, dividend yield, ROCE, ROE, face value
-- Known gaps: debt-to-equity no longer present in the page's ratio strip — derive from Balance Sheet (borrowings ÷ equity+reserves) when quality factors land; bank/non-financial separation needed since ROCE is meaningless for lenders
-- Full-universe refresh cost at N=1000: ~35 min/month at polite delay — run manually or as a monthly dispatch job, never per-week
+1. **screener.in** (`nla/fundamentals.py`): ratio strip (ROCE, ROE, P/E, book value, dividend yield), 30-day TTL cache, 2s polite delay. Known gap: debt-to-equity no longer shown on its pages.
+2. **tickertape.in** (`nla/tickertape.py`, Zerodha-incubated): search API resolves NSE symbol → internal slug; each stock page embeds server-side JSON with **GICS sector/industry**, scorecard tags (performance/valuation/growth/profitability/red-flags/entry-point), P/E & TTM P/E vs industry, P/B, beta, 52-week range, market-cap rank, and full annual balance-sheet/income/cash-flow statements — **debt-to-equity is computed from `balTdeb/balTeq`**, closing the screener gap. Same TTL/delay discipline; ~60 fields per symbol.
+
+Both are consumed by LLM memo packets. Full-universe refresh at N=1000 costs roughly an hour of polite crawling per source per month — run manually or via a future scheduled job, never per-week.
 
 ## Paper ledger
 
