@@ -1,0 +1,34 @@
+{
+  "symbol": "MACPOWER",
+  "week": "2026-W35",
+  "generated_at": "2026-08-24",
+  "stance": "avoid",
+  "conviction": 88,
+  "thesis": "Stock up 118% in 6 months with momentum score 98.1 signals extreme overheating. Zero fundamental data provided to justify valuation; one headline flags underlying issues. Pure momentum chase with no visible earnings anchor.",
+  "risks": [
+    "violent mean reversion",
+    "no fundamental visibility",
+    "potential accounting/quality concerns"
+  ],
+  "news_sentiment": "negative",
+  "packet": {
+    "symbol": "MACPOWER",
+    "sector": "Industrials",
+    "sector_rs_rank": null,
+    "price": 1963.4,
+    "ret_21d_pct": 46.0,
+    "ret_63d_pct": 86.0,
+    "ret_126d_pct": 118.5,
+    "momentum_score": 98.1,
+    "history_sessions": 251,
+    "fundamentals": {},
+    "tickertape": {},
+    "recent_news_headlines": [
+      "Macpower CNC Machines Ltd. Share Price News and Analysis - Univest",
+      "Macpower CNC Machines (NSE:MACPOWER) Strong Profits May Be Masking Some Underlying Issues - simplywall.st",
+      "Macpower CNC Machines Ltd. Share Price Rises 8.64% Today - Univest",
+      "Macpower Cnc Mchs | Stock Share Price Live - MarketSmith India",
+      "Macpower CNC targets 28-30% revenue growth in FY27 - scanx.trade"
+    ]
+  }
+}

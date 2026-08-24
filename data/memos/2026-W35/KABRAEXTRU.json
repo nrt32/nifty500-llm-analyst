@@ -2,9 +2,33 @@
   "symbol": "KABRAEXTRU",
   "week": "2026-W35",
   "generated_at": "2026-08-24",
-  "error": "_call_opencode: OPENCODE_API_KEY not set; _call_gemini: gemini gemini-flash-latest 503: {\n  \"error\": {\n    \"code\": 503,\n    \"message\": \"This model is currently experiencing high demand. Spikes in demand are usually temporary. Please try again later.\",\n    \"status\": \"UNAVAILABLE\"\n  }\n}\n",
+  "stance": "avoid",
+  "conviction": 72,
+  "thesis": "Momentum is extreme but almost entirely recent: +62% in 21 days and +168% in 63 days versus +144% over 126 days implies a near-vertical breakout off a choppy base. With no fundamentals or valuation data supplied, there is no anchor for fair value, and a >10% down-session already shows fragility. Chasing a 99th-percentile momentum name this extended offers poor risk-reward for a months-long position. Wait for consolidation or fundamental confirmation.",
+  "risks": [
+    "Parabolic 62% 21-day move highly prone to sharp mean reversion",
+    "No fundamentals or valuation data to justify entry at 611",
+    "Elevated volatility already evident via a >10% single-day decline"
+  ],
+  "news_sentiment": "neutral",
   "packet": {
     "symbol": "KABRAEXTRU",
-    "sector": "unmapped"
+    "sector": "Industrials",
+    "sector_rs_rank": null,
+    "price": 611.1,
+    "ret_21d_pct": 62.2,
+    "ret_63d_pct": 168.1,
+    "ret_126d_pct": 144.0,
+    "momentum_score": 99.4,
+    "history_sessions": 251,
+    "fundamentals": {},
+    "tickertape": {},
+    "recent_news_headlines": [
+      "Kabra Extrusiontechnik Share Price rises 8.59%: analysis - Univest",
+      "Kabra Extrusiontechnik Ltd. (KABRAEXTRU) Share Price Rises 8.33% Today - Univest",
+      "Risks To Shareholder Returns Are Elevated At These Prices For Kabra Extrusiontechnik Limited (NSE:KABRAEXTRU) - simplywall.st",
+      "Kabra Extrusiontechnik Ltd. (KABRAEXTRU) Share Price Rises 8.13% Today - Univest",
+      "Kabra Extrusiontechnik Ltd. (KABRAEXTRU) Share Price Falls Over 10% Today - Univest"
+    ]
   }
 }

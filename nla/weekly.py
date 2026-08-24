@@ -12,7 +12,7 @@ from nla.history import load_close_history, refresh_from_daily
 from nla.ledger import ledger_stats, log_weekly_entries
 from nla.memos import get_memo
 from nla.report import write_report
-from nla.sector import cycle_stage_label, load_sector_map, refresh_sector_map, relative_strength
+from nla.sector import cycle_stage_label, load_sector_map, register_pending_symbols, relative_strength
 from nla.site import build_site
 from nla.universe import load_active_symbols
 
@@ -161,7 +161,7 @@ def render_screen(
         f"| Close history rows | {len(hist)} |",
         f"| Symbols with history | {hist['symbol'].nunique()} in universe |",
         f"| Data window | {first} to {last} |",
-        f"| Sector map coverage | {covered} / {hist['symbol'].nunique()} (NSE sector indices) |",
+        f"| Sector map coverage | {covered} / {hist['symbol'].nunique()} (GICS, static map) |",
         "",
         "## Sector relative strength",
         "",
@@ -271,7 +271,7 @@ def _run(slug: str) -> None:
     except Exception:
         pass
     try:
-        refresh_sector_map()
+        register_pending_symbols(load_active_symbols())
     except Exception:
         pass
     hist = load_close_history()

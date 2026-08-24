@@ -2,9 +2,33 @@
   "symbol": "CUPID",
   "week": "2026-W35",
   "generated_at": "2026-08-24",
-  "error": "_call_opencode: OPENCODE_API_KEY not set; _call_gemini: gemini gemini-flash-latest 503: {\n  \"error\": {\n    \"code\": 503,\n    \"message\": \"This model is currently experiencing high demand. Spikes in demand are usually temporary. Please try again later.\",\n    \"status\": \"UNAVAILABLE\"\n  }\n}\n",
+  "stance": "avoid",
+  "conviction": 65,
+  "thesis": "CUPID has exceptional momentum with over 236% gain in 126 days and positive news on index additions and promoter buying, but the lack of fundamental data and extreme price rise indicate overheated conditions and high correction risk.",
+  "risks": [
+    "Overheated price momentum",
+    "No fundamental valuation available",
+    "Potential for sharp pullback after steep gains"
+  ],
+  "news_sentiment": "positive",
   "packet": {
     "symbol": "CUPID",
-    "sector": "unmapped"
+    "sector": "Consumer Defensive",
+    "sector_rs_rank": null,
+    "price": 286.41,
+    "ret_21d_pct": 34.2,
+    "ret_63d_pct": 122.2,
+    "ret_126d_pct": 236.7,
+    "momentum_score": 98.6,
+    "history_sessions": 252,
+    "fundamentals": {},
+    "tickertape": {},
+    "recent_news_headlines": [
+      "Urban Company, Cupid, Acme Solar, among other stocks in focus on FTSE index addition update; key things to know - Upstox",
+      "Cupid promoter buys Rs 163 cr worth shares in this listed firm; stock hits upper circuit - Business Today",
+      "Cupid Share Jumps 5% As BSE Group 'A' Upgrade, Growth Outlook Revive Buying Interest - HDFC Sky",
+      "Cupid shares jump nearly 9% in two days post Q1 earnings - The Economic Times",
+      "STOCKS IN ACTION: Bharat Electronics, Shakti Pumps, Cupid, Prestige Estates and others - MarketSmith India"
+    ]
   }
 }

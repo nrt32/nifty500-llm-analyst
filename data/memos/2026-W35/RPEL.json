@@ -2,9 +2,33 @@
   "symbol": "RPEL",
   "week": "2026-W35",
   "generated_at": "2026-08-24",
-  "error": "_call_opencode: OPENCODE_API_KEY not set; _call_gemini: HTTPSConnectionPool(host='generativelanguage.googleapis.com', port=443): Read timed out. (read timeout=90)",
+  "stance": "avoid",
+  "conviction": 80,
+  "thesis": "RPEL's 126-day return of 142% and momentum score 96.8 signal an extremely overheated move. With empty fundamentals and mixed news (analyst bet vs valuation caution), momentum alone fails the buy test. Positional long-only exposure risks severe mean-reversion; avoid chasing the rally.",
+  "risks": [
+    "Overheated momentum",
+    "No fundamental data",
+    "Mixed news/valuation caution"
+  ],
+  "news_sentiment": "neutral",
   "packet": {
     "symbol": "RPEL",
-    "sector": "unmapped"
+    "sector": "Basic Materials",
+    "sector_rs_rank": null,
+    "price": 1662.4,
+    "ret_21d_pct": 27.6,
+    "ret_63d_pct": 72.1,
+    "ret_126d_pct": 142.2,
+    "momentum_score": 96.8,
+    "history_sessions": 251,
+    "fundamentals": {},
+    "tickertape": {},
+    "recent_news_headlines": [
+      "Raghav Productivity Enhancers Ltd. Share Price at 52-Week - Univest",
+      "Raghav Productivity Enhancers Limited (NSE:RPEL) Shares Slammed 28% But Getting In Cheap Might Be Difficult Regardless - simplywall.st",
+      "Top trading ideas: Analyst bets on Yatharth Hospital, RPEL, Ingersoll-Rand - Business Standard",
+      "RPEL Stock Price and Chart \u2014 NSE:RPEL - TradingView",
+      "Raghav Productivity Enhancers | Stock Share Price Live - MarketSmith India"
+    ]
   }
 }

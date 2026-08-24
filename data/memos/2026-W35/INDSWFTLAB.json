@@ -2,9 +2,33 @@
   "symbol": "INDSWFTLAB",
   "week": "2026-W35",
   "generated_at": "2026-08-24",
-  "error": "_call_opencode: OPENCODE_API_KEY not set; _call_gemini: HTTPSConnectionPool(host='generativelanguage.googleapis.com', port=443): Read timed out. (read timeout=90)",
+  "stance": "avoid",
+  "conviction": 74,
+  "thesis": "INDSWFTLAB is parabolic: +43.9% in 21 days and +142.7% in 63 days, with the 126d figure (130.7%) below the 63d figure, showing the entire rally compressed into the recent quarter. Momentum score 98.7 signals extreme extension/crowding. No fundamental or tickertape data is available to justify valuation, and a cited analyst forecast of Rs 190 sits roughly 42% below spot. For a months-to-quarters long-only position, risk/reward strongly favors waiting for consolidation.",
+  "risks": [
+    "Overheated momentum prone to sharp mean reversion after vertical run",
+    "Price far above cited Rs 190 analyst target with no fundamentals to validate valuation",
+    "Small-cap volatility and thin disclosure; ESOP allotments add minor dilution"
+  ],
+  "news_sentiment": "neutral",
   "packet": {
     "symbol": "INDSWFTLAB",
-    "sector": "unmapped"
+    "sector": "Healthcare",
+    "sector_rs_rank": null,
+    "price": 327.27,
+    "ret_21d_pct": 43.9,
+    "ret_63d_pct": 142.7,
+    "ret_126d_pct": 130.7,
+    "momentum_score": 98.7,
+    "history_sessions": 251,
+    "fundamentals": {},
+    "tickertape": {},
+    "recent_news_headlines": [
+      "Ind-Swift Laboratories Ltd. (INDSWFTLAB) Share Price Rises 8.68% as Small Cap Stock Gains Today - Univest",
+      "Ind-Swift Laboratories Limited's (NSE:INDSWFTLAB) Shares Bounce 29% But Its Business Still Trails The Market - simplywall.st",
+      "Ind-Swift Laboratories (NSE:INDSWFTLAB) delivers shareholders decent 16% CAGR over 3 years, surging 13% in the last week alone - simplywall.st",
+      "Ind-Swift Laboratories Share Price Target 2026: Rs 190 Analyst Forecast - Univest",
+      "Ind-Swift Laboratories Allots 1.25 Lakh Equity Shares Under Employee Incentive Scheme - scanx.trade"
+    ]
   }
 }
