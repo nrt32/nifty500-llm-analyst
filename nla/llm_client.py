@@ -15,27 +15,54 @@ from nla.config import (
 
 GEMINI_FALLBACK_MODELS = ["gemini-flash-latest", "gemini-2.5-flash"]
 
+OPENCODE_FALLBACK_MODELS = [
+    MODEL,
+    "deepseek-v4-flash-free",
+    "x-preview-f-free",
+    "mimo-v2.5-free",
+    "nemotron-3-ultra-free",
+    "nemotron-3.5-lightning-free",
+    "hy3-free",
+    "laguna-s-2.1-free",
+]
+
 
 class LLMUnavailable(Exception):
     pass
 
 
 def _call_opencode(prompt: str, timeout: int = 90) -> str:
-    if not OPENCODE_API_KEY:
-        raise LLMUnavailable("OPENCODE_API_KEY not set")
-    resp = requests.post(
-        f"{OPENCODE_BASE_URL}/chat/completions",
-        headers={"Authorization": f"Bearer {OPENCODE_API_KEY}", "Content-Type": "application/json"},
-        json={
-            "model": MODEL,
-            "messages": [{"role": "user", "content": prompt}],
-            "temperature": 0.2,
-        },
-        timeout=timeout,
-    )
-    if resp.status_code >= 400:
-        raise LLMUnavailable(f"opencode {resp.status_code}: {resp.text[:300]}")
-    return str(resp.json()["choices"][0]["message"]["content"])
+    headers = {"Content-Type": "application/json"}
+    if OPENCODE_API_KEY:
+        headers["Authorization"] = f"Bearer {OPENCODE_API_KEY}"
+    candidates = list(dict.fromkeys(m for m in OPENCODE_FALLBACK_MODELS if m))
+    last_error = ""
+    for model in candidates:
+        try:
+            resp = requests.post(
+                f"{OPENCODE_BASE_URL}/chat/completions",
+                headers=headers,
+                json={
+                    "model": model,
+                    "messages": [{"role": "user", "content": prompt}],
+                    "temperature": 0.2,
+                },
+                timeout=timeout,
+            )
+        except Exception as exc:
+            last_error = f"opencode {model}: {exc}"
+            continue
+        if resp.status_code < 400:
+            try:
+                content = str(resp.json()["choices"][0]["message"]["content"])
+                if content.strip():
+                    return content.strip()
+                last_error = f"opencode {model}: empty response"
+            except Exception as exc:
+                last_error = f"opencode {model}: bad payload {exc}"
+            continue
+        last_error = f"opencode {model} {resp.status_code}: {resp.text[:200]}"
+    raise LLMUnavailable(last_error or "opencode exhausted fallbacks")
 
 
 def _gemini_post(model: str, prompt: str, timeout: int) -> requests.Response:
@@ -75,7 +102,7 @@ def _call_gemini(prompt: str, timeout: int = 90) -> str:
 
 
 def available() -> bool:
-    return bool(OPENCODE_API_KEY or GEMINI_API_KEY)
+    return True
 
 
 def complete(prompt: str) -> str:
