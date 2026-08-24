@@ -7,15 +7,20 @@ on:
 
 permissions:
   contents: write
+  pages: write
+  id-token: write
 
 concurrency:
-  group: scorecard
+  group: pages
   cancel-in-progress: false
 
 jobs:
   scorecard:
     runs-on: ubuntu-latest
     timeout-minutes: 20
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - uses: actions/checkout@v6
       - uses: actions/setup-python@v6
@@ -39,3 +44,12 @@ jobs:
           git commit -m "scorecard: monthly paper results [skip ci]"
           git pull --rebase origin "$GITHUB_REF_NAME"
           git push
+      - name: Build site
+        run: python -m nla.site
+      - uses: actions/configure-pages@v6
+      - uses: actions/upload-pages-artifact@v5
+        with:
+          path: site
+          retention-days: 1
+      - id: deployment
+        uses: actions/deploy-pages@v5
