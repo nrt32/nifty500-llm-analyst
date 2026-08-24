@@ -1,5 +1,6 @@
 import json
 import sys
+import time
 from datetime import date
 from pathlib import Path
 
@@ -11,6 +12,8 @@ from nla.config import DATA_DIR
 MEMOS_DIR = DATA_DIR / "memos"
 
 NEWS_URL = "https://news.google.com/rss/search?q={query}+stock+India&hl=en-IN&gl=IN&ceid=IN:en"
+POLITE_DELAY_SEC = 12.0
+RATE_LIMIT_WAIT_SEC = 50.0
 
 
 def _recent_news(symbol: str, limit: int = 5) -> list[str]:

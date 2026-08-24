@@ -1,4 +1,5 @@
 import sys
+import time
 from datetime import date, datetime, timedelta, timezone
 
 import pandas as pd
@@ -18,6 +19,8 @@ from nla.universe import load_active_symbols
 IST = timezone(timedelta(hours=5, minutes=30))
 TOP_N = 30
 MEMO_TOP_N = 10
+MEMO_POLITE_SEC = 12.0
+MEMO_RATE_LIMIT_WAIT = 50.0
 
 
 def week_slug(ref: datetime | None = None) -> str:
@@ -61,9 +64,11 @@ def build_memos(mom: pd.DataFrame, smap: pd.DataFrame, rs: pd.DataFrame, slug: s
     sym_rs_rank = dict(zip(rs["sector"], rs["rs_rank"])) if not rs.empty else {}
     fundamentals = _load_fundamentals()
     ok = err = 0
-    for _, row in mom.head(MEMO_TOP_N).iterrows():
+    for i, (_, row) in enumerate(mom.head(MEMO_TOP_N).iterrows()):
         symbol = str(row["symbol"])
         sector = sym_sector.get(symbol)
+        if i:
+            time.sleep(MEMO_POLITE_SEC)
         memo = get_memo(
             symbol,
             row,
@@ -72,6 +77,10 @@ def build_memos(mom: pd.DataFrame, smap: pd.DataFrame, rs: pd.DataFrame, slug: s
             slug,
             fundamentals=fundamentals.get(symbol),
         )
+        if memo and "error" in memo and "429" in str(memo.get("error")):
+            print(f"memo {symbol}: rate limited, waiting {MEMO_RATE_LIMIT_WAIT:.0f}s")
+            time.sleep(MEMO_RATE_LIMIT_WAIT)
+            memo = get_memo(symbol, row, sector, sym_rs_rank.get(sector), slug, fundamentals=fundamentals.get(symbol))
         if memo and "error" not in memo:
             memos[symbol] = memo
             ok += 1
