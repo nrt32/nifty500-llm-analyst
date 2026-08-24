@@ -4,5 +4,7 @@
   "price_source": "exists",
   "repaired": [],
   "history_rows": 244945,
-  "liquid_universe": 1000
+  "liquid_universe": 1000,
+  "ledger_settled": 0,
+  "ledger_stopped": 0
 }
