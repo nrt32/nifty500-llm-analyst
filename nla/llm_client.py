@@ -30,7 +30,8 @@ def _call_opencode(prompt: str, timeout: int = 90) -> str:
         },
         timeout=timeout,
     )
-    resp.raise_for_status()
+    if resp.status_code >= 400:
+        raise LLMUnavailable(f"opencode {resp.status_code}: {resp.text[:300]}")
     return str(resp.json()["choices"][0]["message"]["content"])
 
 
@@ -47,7 +48,8 @@ def _call_gemini(prompt: str, timeout: int = 90) -> str:
         },
         timeout=timeout,
     )
-    resp.raise_for_status()
+    if resp.status_code >= 400:
+        raise LLMUnavailable(f"gemini {resp.status_code}: {resp.text[:300]}")
     parts = resp.json()["candidates"][0]["content"]["parts"]
     return "".join(str(p.get("text", "")) for p in parts)
 

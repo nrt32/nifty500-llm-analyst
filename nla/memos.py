@@ -84,6 +84,15 @@ def get_memo(
     try:
         raw = llm_client.complete(prompt)
     except Exception as exc:
+        failure = {
+            "symbol": symbol,
+            "week": week,
+            "generated_at": str(date.today()),
+            "error": str(exc),
+            "packet": {"symbol": symbol, "sector": sector or "unmapped"},
+        }
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(json.dumps(failure, indent=2), encoding="utf-8")
         return {"error": str(exc), "stance": "hold", "conviction": None}
     parsed = llm_client.extract_json(raw)
     if not parsed:
