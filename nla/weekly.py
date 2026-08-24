@@ -242,6 +242,22 @@ def render_screen(
 def main() -> int:
     slug = week_slug()
     try:
+        _run(slug)
+        return 0
+    except Exception:
+        import traceback
+
+        tb = traceback.format_exc()
+        print(tb, file=sys.stderr)
+        try:
+            write_report(REPORTS_DIR / "weekly" / f"error-{slug}.md", f"# Weekly Run Error {slug}\n\n```\n{tb}\n```\n")
+        except Exception:
+            pass
+        return 1
+
+
+def _run(slug: str) -> None:
+    try:
         refresh_from_daily()
     except Exception:
         pass
