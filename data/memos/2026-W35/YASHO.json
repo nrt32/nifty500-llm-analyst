@@ -2,9 +2,32 @@
   "symbol": "YASHO",
   "week": "2026-W35",
   "generated_at": "2026-08-24",
-  "error": "_call_opencode: OPENCODE_API_KEY not set; _call_gemini: gemini gemini-flash-latest 429: {\n  \"error\": {\n    \"code\": 429,\n    \"message\": \"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-a",
+  "stance": "hold",
+  "conviction": 55,
+  "thesis": "Yasho exhibits exceptional price momentum and strong headline earnings growth following a heavy capex cycle. However, a parabolic 195% rally over 126 sessions leaves the stock severely overheated and trading well above consensus targets. Without detailed fundamental valuation metrics to justify the sharp multiple expansion, risk-reward is unfavorable for fresh positional long entries. A consolidation or mean-reversion pullback is warranted before initiating new positions.",
+  "risks": [
+    "Sharp mean-reversion risk after a parabolic 195% 6-month rally",
+    "Execution and demand risks post-capex ramp-up",
+    "Valuation stretch trading well above analyst forecast targets"
+  ],
+  "news_sentiment": "positive",
   "packet": {
     "symbol": "YASHO",
-    "sector": "unmapped"
+    "sector": "unmapped",
+    "sector_rs_rank": null,
+    "price": 4400.0,
+    "ret_21d_pct": 42.9,
+    "ret_63d_pct": 95.6,
+    "ret_126d_pct": 195.3,
+    "momentum_score": 99.0,
+    "history_sessions": 249,
+    "fundamentals": {},
+    "recent_news_headlines": [
+      "After years of capex pain, is Yasho Industries entering a new growth phase? - The Indian Express",
+      "Yasho Industries | Stock Share Price Live - MarketSmith India",
+      "Yasho Industries Share Price Target 2026: Rs 3,450 Analyst Forecast - Univest",
+      "Yasho Industries releases Q1FY27 conference call audio for investors - scanx.trade",
+      "Yasho Industries consolidated net profit rises 143.74% in the March 2026 quarter - Business Standard"
+    ]
   }
 }
