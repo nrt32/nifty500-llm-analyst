@@ -2,9 +2,32 @@
   "symbol": "SHILPAMED",
   "week": "2026-W35",
   "generated_at": "2026-08-24",
-  "error": "_call_opencode: OPENCODE_API_KEY not set; _call_gemini: gemini gemini-flash-latest 429: {\n  \"error\": {\n    \"code\": 429,\n    \"message\": \"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-a",
+  "stance": "hold",
+  "conviction": 55,
+  "thesis": "SHILPAMED exhibits strong momentum supported by recent earnings upgrades and multi-year highs. However, the stock is technically overextended after gaining 147.9% in 126 sessions and 35.0% over the past month. While the underlying operational trend is positive, entering at current levels offers an unfavorable risk-reward ratio for a positional horizon. Await a constructive consolidation or price pullback before initiating fresh long positions.",
+  "risks": [
+    "Sharp mean-reversion risk following an overextended rally",
+    "Pharma regulatory compliance and plant audit risks",
+    "Earnings growth failing to match heightened market expectations"
+  ],
+  "news_sentiment": "positive",
   "packet": {
     "symbol": "SHILPAMED",
-    "sector": "unmapped"
+    "sector": "unmapped",
+    "sector_rs_rank": null,
+    "price": 814.95,
+    "ret_21d_pct": 35.0,
+    "ret_63d_pct": 61.4,
+    "ret_126d_pct": 147.9,
+    "momentum_score": 97.4,
+    "history_sessions": 251,
+    "fundamentals": {},
+    "recent_news_headlines": [
+      "Shilpa Medicare Ltd. Share Price Hits New One-Year High - Univest",
+      "Here's Why We Think Shilpa Medicare (NSE:SHILPAMED) Might Deserve Your Attention Today - simplywall.st",
+      "HOT STOCKS: SHILPAMED Hits All-Time High; WSTCSTPAPR, CGCL, ARVIND, GLAND Lead Gainers; MAHSEAMLES Slips Below 100-DMA While CANFINHOME, SCHAEFFLER Climb Above 50-SMA - MarketSmith India",
+      "Shilpa Medicare Limited (NSE:SHILPAMED) Reported Earnings Last Week And Analysts Are Already Upgrading Their Estimates - simplywall.st",
+      "Shilpa Medicare Ltd. (SHILPAMED) Share Price Hits Fresh 52-Week High - Univest"
+    ]
   }
 }
