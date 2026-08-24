@@ -12,6 +12,7 @@ LEDGER_COLUMNS = [
     "entry_date",
     "symbol",
     "sector",
+    "style",
     "signal_price",
     "momentum_rank",
     "momentum_score",
@@ -40,38 +41,38 @@ def load_ledger() -> pd.DataFrame:
     return df.reindex(columns=LEDGER_COLUMNS)
 
 
-def log_weekly_entries(
-    mom: pd.DataFrame,
-    smap: pd.DataFrame,
+def log_tranche(
     week: str,
     entry_date: str,
-    top_n: int = DEFAULT_TOP_N,
+    entries: list[dict],
 ) -> tuple[int, bool]:
     ledger = load_ledger()
     if not ledger.empty and week in set(ledger["week"].astype(str)):
         return 0, False
-    sym_sector = dict(zip(smap["symbol"].astype(str), smap["sector"].astype(str)))
-    top = mom.head(top_n)
-    if top.empty:
+    if not entries:
         return 0, False
     rows = pd.DataFrame(
-        {
-            "week": week,
-            "entry_date": entry_date,
-            "symbol": top["symbol"].astype(str).values,
-            "sector": [sym_sector.get(str(s), "-") for s in top["symbol"]],
-            "signal_price": top["price"].round(2).values,
-            "momentum_rank": top["momentum_rank"].astype(int).values,
-            "momentum_score": top["momentum_score"].values,
-            "status": "open",
-            "exec_date": "",
-            "exec_price": float("nan"),
-            "exec_basis": "",
-            "stop_pct": float("nan"),
-            "exit_date": "",
-            "exit_price": float("nan"),
-            "exit_reason": "",
-        }
+        [
+            {
+                "week": week,
+                "entry_date": entry_date,
+                "symbol": e["symbol"],
+                "sector": e.get("sector", "-"),
+                "style": e.get("style", "-"),
+                "signal_price": round(float(e["signal_price"]), 2),
+                "momentum_rank": int(e.get("momentum_rank", 0)),
+                "momentum_score": float(e.get("momentum_score", 0.0)),
+                "status": "open",
+                "exec_date": "",
+                "exec_price": float("nan"),
+                "exec_basis": "",
+                "stop_pct": float("nan") if e.get("stop_pct") is None else float(e["stop_pct"]),
+                "exit_date": "",
+                "exit_price": float("nan"),
+                "exit_reason": "",
+            }
+            for e in entries
+        ]
     )
     combined = pd.concat([ledger, rows], ignore_index=True)[LEDGER_COLUMNS]
     LEDGER_DIR.mkdir(parents=True, exist_ok=True)
@@ -148,47 +149,3 @@ def settle_pending_entries(target_date: str, price_dir=None) -> int:
     if settled_count:
         ledger.to_csv(LEDGER_CSV, index=False)
     return settled_count
-
-
-def check_stop_exits(target_date: str, price_dir=None) -> int:
-    import pandas as pd
-
-    from nla.config import PRICE_DIR as DEFAULT_PRICE_DIR
-
-    price_dir = Path(price_dir) if price_dir else Path(DEFAULT_PRICE_DIR)
-    ledger = load_ledger()
-    if ledger.empty or "stop_pct" not in ledger.columns:
-        return 0
-    mask = (
-        (ledger["status"] == "open")
-        & (ledger["exec_price"].notna())
-        & (ledger["stop_pct"].notna())
-        & (ledger["exec_date"].astype(str) < target_date)
-    )
-    if not mask.any():
-        return 0
-    path = price_dir / f"{target_date}.parquet"
-    if not path.exists():
-        return 0
-    try:
-        day_df = pd.read_parquet(path)
-    except Exception:
-        return 0
-    stopped_count = 0
-    for idx, row in ledger[mask].iterrows():
-        match = day_df[day_df["symbol"] == row["symbol"]]
-        if match.empty:
-            continue
-        low_col = "low" if "low" in match.columns else None
-        if low_col is None or pd.isna(match.iloc[0][low_col]):
-            continue
-        stop_level = round(float(row["exec_price"]) * (1 - float(row["stop_pct"])), 2)
-        if float(match.iloc[0][low_col]) <= stop_level:
-            ledger.loc[idx, "status"] = "stopped"
-            ledger.loc[idx, "exit_date"] = target_date
-            ledger.loc[idx, "exit_price"] = stop_level
-            ledger.loc[idx, "exit_reason"] = f"stop {int(row['stop_pct'] * 10000) / 100}%"
-            stopped_count += 1
-    if stopped_count:
-        ledger.to_csv(LEDGER_CSV, index=False)
-    return stopped_count

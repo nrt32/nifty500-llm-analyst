@@ -7,7 +7,8 @@ import pandas as pd
 from nla.config import DATA_DIR, REPORTS_DIR, UNIVERSE_CSV, UNIVERSE_MODE, UNIVERSE_SIZE
 from nla.history import CLOSE_PARQUET, refresh_from_daily
 from nla.ingest import day_path, update_day
-from nla.ledger import check_stop_exits, settle_pending_entries
+from nla.exits import run_exit_checks
+from nla.ledger import settle_pending_entries
 from nla.report import write_report
 from nla.universe import LIQUID_UNIVERSE_CSV, build_liquid_universe, refresh_universe
 
@@ -94,9 +95,10 @@ def main() -> int:
     except Exception:
         ledger_settled = 0
     try:
-        ledger_stopped = check_stop_exits(target.isoformat())
+        exit_counts = run_exit_checks(target.isoformat())
     except Exception:
-        ledger_stopped = 0
+        exit_counts = {}
+    ledger_stopped = exit_counts.get("exited", 0)
     liquid_n: int | None = None
     if UNIVERSE_MODE == "liquid":
         try:

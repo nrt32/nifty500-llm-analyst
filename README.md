@@ -37,7 +37,11 @@ announcements ┘            sector relative strength     sector-cycle stage
 
 ## LLM analyst layer
 
-`nla/llm_client.py` is provider-agnostic via env (`NLA_LLM_PROVIDER`=opencode\|gemini, model names, base URL, keys). The weekly run builds structured packets (momentum stats, sector RS rank, cached screener ratios, Google News RSS headlines) for the top 10 names and requests strict-JSON memos (stance, conviction 0-100, thesis, risks), cached under `data/memos/<week>/`. Without a key the step skips gracefully and the engine runs quant-only. Where quant and LLM conviction diverge by >= 30 points the candidate is flagged **HUMAN_REVIEW** and routed to `reports/review/<week>.md` instead of receiving a weight - conflicts are never auto-resolved.
+Two keyless/free providers in a failover chain (`nla/llm_client.py`): opencode Zen primary (no auth needed, free-model pool with automatic skip of dead/overloaded models), Gemini `flash-latest` fallback (auto-adopts the API's suggested model when one retires).
+
+**Entry committee** (`nla/entry.py`): candidates from the weekly screen must first pass a hard technical gate - uptrend above EMA50/200, RSI(14) 45-78, extension <=15% over EMA21, plus a real trigger: either a volume-confirmed BREAKOUT (>=98% of 52-week high on >=1.5x median volume) or a PULLBACK resumption (EMA20 touch within 5 sessions while above it, uptrend intact). Survivors face a **two-agent debate**: a Bull researcher argues for inclusion, a Bear researcher argues to exclude - same packet, opposing mandates, JSON verdicts. A deterministic judge rules: consensus includes, bull-rejection kills, and split decisions with a strong bear (conviction >=65) route to the human review queue instead of the portfolio.
+
+**Layered exits** (`nla/exits.py`, checked daily): initial volatility stop (intraday low) -> chandelier-style trailing stop off the high-water close (close-confirmed) -> trend break (two consecutive closes under EMA50) -> time stop (flat after 40 sessions).
 
 ## Score engine & risk rules
 

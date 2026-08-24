@@ -4,13 +4,13 @@ from datetime import date, datetime, timedelta, timezone
 
 import pandas as pd
 
-from nla.config import REPORTS_DIR
+from nla import entry
+from nla.config import DATA_DIR, REPORTS_DIR
 from nla.engine import evaluate
 from nla.events import detect_events
 from nla.factors import momentum_ranks
 from nla.history import load_close_history, refresh_from_daily
-from nla.ledger import ledger_stats, log_weekly_entries
-from nla.memos import get_memo
+from nla.ledger import ledger_stats, log_tranche
 from nla.report import write_report
 from nla.sector import cycle_stage_label, load_sector_map, register_pending_symbols, relative_strength
 from nla.site import build_site
@@ -18,9 +18,6 @@ from nla.universe import load_active_symbols
 
 IST = timezone(timedelta(hours=5, minutes=30))
 TOP_N = 30
-MEMO_TOP_N = 10
-MEMO_POLITE_SEC = 12.0
-MEMO_RATE_LIMIT_WAIT = 50.0
 
 
 def week_slug(ref: datetime | None = None) -> str:
@@ -36,8 +33,6 @@ def _pct(x) -> str:
 
 
 def _load_fundamentals() -> dict[str, dict]:
-    from nla.config import DATA_DIR
-
     fdir = DATA_DIR / "fundamentals"
     out: dict[str, dict] = {}
     if not fdir.exists():
@@ -54,81 +49,51 @@ def _load_fundamentals() -> dict[str, dict]:
 import json
 
 
-def build_memos(mom: pd.DataFrame, smap: pd.DataFrame, rs: pd.DataFrame, slug: str) -> dict[str, dict]:
-    from nla import llm_client
-
-    memos: dict[str, dict] = {}
-    if not llm_client.available():
-        return memos
-    sym_sector = dict(zip(smap["symbol"].astype(str), smap["sector"].astype(str)))
-    sym_rs_rank = dict(zip(rs["sector"], rs["rs_rank"])) if not rs.empty else {}
-    fundamentals = _load_fundamentals()
-    ok = err = 0
-    for i, (_, row) in enumerate(mom.head(MEMO_TOP_N).iterrows()):
-        symbol = str(row["symbol"])
-        sector = sym_sector.get(symbol)
-        if i:
-            time.sleep(MEMO_POLITE_SEC)
-        memo = get_memo(
-            symbol,
-            row,
-            sector,
-            sym_rs_rank.get(sector),
-            slug,
-            fundamentals=fundamentals.get(symbol),
-        )
-        if memo and "error" in memo and "429" in str(memo.get("error")):
-            print(f"memo {symbol}: rate limited, waiting {MEMO_RATE_LIMIT_WAIT:.0f}s")
-            time.sleep(MEMO_RATE_LIMIT_WAIT)
-            memo = get_memo(symbol, row, sector, sym_rs_rank.get(sector), slug, fundamentals=fundamentals.get(symbol))
-        if memo and "error" not in memo:
-            memos[symbol] = memo
-            ok += 1
-            print(f"memo {symbol}: {memo.get('stance')} / {memo.get('conviction')}")
-        elif memo and "error" in memo:
-            err += 1
-            print(f"memo {symbol} FAILED: {memo.get('error')}")
-    print(f"memos built: ok={ok} errors={err}")
-    return memos
-
-
-def render_recs(recs: pd.DataFrame, memos_count: int) -> list[str]:
+def render_committee(results: list[dict], gated: int) -> list[str]:
+    included = sum(1 for r in results if r["decision"] == "INCLUDED")
+    review = sum(1 for r in results if r["decision"] == "HUMAN_REVIEW")
     lines = [
         "",
-        "## Recommendations (score engine output)",
+        "## Entry Committee",
         "",
-        f"LLM memos used: {memos_count} of top {MEMO_TOP_N}. "
-        "Suggested weight is volatility-targeted (inverse 21d move), capped at "
-        "10% per position, 30% per mapped sector, 20 positions. Stop = next-session entry minus the shown %.",
+        "Candidates must first pass a hard technical gate (uptrend above EMA50/200, RSI 45-78, "
+        "extension <=15% over EMA21, plus a BREAKOUT or PULLBACK trigger). Survivors face a two-agent debate: "
+        "a Bull researcher argues for inclusion, a Bear researcher argues to exclude. A deterministic judge rules; "
+        "split decisions with a strong bear go to the human review queue.",
         "",
-        "| Rank | Symbol | Sector | Final | Quant | LLM stance/conv | Weight % | Stop % | Flag |",
+        f"Debated {len(results)} of {gated} gate-passers. Outcomes: **{included} included**, "
+        f"{review} human-review, {sum(1 for r in results if r['decision'] == 'REJECTED')} rejected.",
+        "",
+        "| Symbol | Sector | Style | RSI | Ext% | VolRatio | Bull | Bear | Decision |",
         "| --- | --- | --- | --- | --- | --- | --- | --- | --- |",
     ]
-    for i, (_, r) in enumerate(recs.iterrows(), start=1):
-        llm_txt = "-" if r["llm_conviction"] is None or pd.isna(r["llm_conviction"]) else f"{r['llm_stance']}/{int(r['llm_conviction'])}"
+    for r in results:
+        d = r["gate_detail"]
+
+        def side(side_name: str) -> str:
+            s = r[side_name]
+            return f"{s['verdict']}/{s['conviction']}"
+
         lines.append(
-            f"| {i} | {r['symbol']} | {r['sector_tag']} | {r['final_score']} | {r['quant_score']} "
-            f"| {llm_txt} | {r['suggested_weight_pct']} | {_pct(r['stop_pct']) if r['stop_pct'] else '-'} | {r['flag'] or ''} |"
+            f"| {r['symbol']} | {r['sector']} | {r['style']} | {d['rsi']} | {d['ext_pct']} | {d['vol_ratio']} "
+            f"| {side('bull')} | {side('bear')} | {r['decision']} |"
         )
     return lines
 
 
-def write_review_queue(slug: str, recs: pd.DataFrame, memos: dict[str, dict]) -> int:
-    flagged = recs[recs["flag"] == "HUMAN_REVIEW"]
-    if flagged.empty:
+def render_review(slug: str, results: list[dict]) -> int:
+    flagged = [r for r in results if r["decision"] == "HUMAN_REVIEW"]
+    if not flagged:
         return 0
-    lines = [f"# Human Review Queue {slug}", "", "Quant and LLM disagree beyond tolerance - resolve manually before acting.", ""]
-    for _, r in flagged.iterrows():
-        memo = memos.get(str(r["symbol"]), {})
+    lines = [f"# Human Review Queue {slug}", "", "The committee split on these - resolve manually before they can ever be sized.", ""]
+    for r in flagged:
         lines += [
-            f"## {r['symbol']} - quant {r['quant_score']} vs LLM {r['llm_conviction']} ({memo.get('stance', '-')})",
+            f"## {r['symbol']} ({r['style']}) - quant momentum {r['momentum_score']}",
             "",
-            str(memo.get("thesis", "")),
+            f"- Bull: {r['bull']['verdict']}/{r['bull']['conviction']} - {r['bull']['reason']}",
+            f"- Bear: {r['bear']['verdict']}/{r['bear']['conviction']} - {r['bear']['reason']}",
             "",
         ]
-        for risk in memo.get("risks", []):
-            lines.append(f"- {risk}")
-        lines.append("")
     write_report(REPORTS_DIR / "review" / f"{slug}.md", "\n".join(lines) + "\n")
     return len(flagged)
 
@@ -143,7 +108,8 @@ def render_screen(
     added: int,
     recs: pd.DataFrame,
     events: pd.DataFrame,
-    memos_count: int,
+    committee: list[dict],
+    gated: int,
     review_n: int,
 ) -> str:
     first, last = hist["date"].min(), hist["date"].max()
@@ -152,7 +118,7 @@ def render_screen(
     lines = [
         f"# Weekly Quant Screen {slug}",
         "",
-        f"Generated {date.today().isoformat()} - quant factors + score engine; LLM memos where a key is configured.",
+        f"Generated {date.today().isoformat()} - quant factors, hard technical gates, and a bull/bear entry committee.",
         "",
         "## Universe health",
         "",
@@ -202,10 +168,22 @@ def render_screen(
             f"| {r['momentum_rank']} | {r['symbol']} | {r['price']:.2f} "
             f"| {_pct(r.get('ret_63d'))} | {_pct(r.get('ret_126d'))} | {r['momentum_score']} |"
         )
-    lines += render_recs(recs, memos_count)
+    lines += render_committee(committee, gated)
     if review_n:
         lines += ["", f"**{review_n} conflict(s) routed to reports/review/{slug}.md - resolve before acting.**"]
+    lines += ["", "## Ranked portfolio (score engine)", ""]
     lines += [
+        "| Rank | Symbol | Final | Weight % | Stop % |",
+        "| --- | --- | --- | --- | --- |",
+    ]
+    eligible = recs[recs["flag"] != "HUMAN_REVIEW"].head(15)
+    for i, (_, r) in enumerate(eligible.iterrows(), start=1):
+        stop_txt = _pct(r["stop_pct"]) if r["stop_pct"] else "-"
+        lines.append(f"| {i} | {r['symbol']} | {r['final_score']} | {r['suggested_weight_pct']} | {stop_txt} |")
+    lines += [
+        "",
+        "Weights are volatility-targeted across committee-included names only and capped at 10%/position, "
+        "30%/sector, 20 positions.",
         "",
         "## Event watchlist",
         "",
@@ -230,19 +208,14 @@ def render_screen(
         f"| Filled at next-session open | {stats.get('settled', 0)} |",
         f"| Entries added this run | {added} |",
         "",
-        "Tranches are recorded at signal-day close for research purity; the daily run then fills each row's "
-        "`exec_price` at the NEXT session's open and arms its stop. Treat tables as watchlists for coming sessions, not fills.",
+        "Exits are layered: initial volatility stop (intraday), chandelier-style trailing stop off the "
+        "high-water close, 2-day EMA50 trend break, and a 40-session time stop - all checked daily.",
         "",
         "## How to read this report",
         "",
-        "- **Sector RS**: equal-weight sector baskets vs whole-universe average return over 21/63/126d; "
-        "RS Score = mean percentile rank of excess returns. Covers only NSE-sector-index members (~188 names); "
-        "these 14 lists are not India's full industry taxonomy and overlap. Stage: Leading/Pullback/Weakening/Improving/Lagging.",
-        "- **Momentum Score**: mean cross-sectional percentile of a stock's 21d/63d/126d total returns (0-100). "
-        "Windows skipped below minimum history gates.",
-        "- **Recommendations**: final = blend(quant, LLM conviction when available) x sector-cycle multiplier x "
-        "fundamental/volatility penalties. HUMAN_REVIEW rows have quant-vs-LLM disagreement >= 30 points.",
-        "- **Prices are unadjusted closes** from NSE bhavcopy / Yahoo; dividend adjustments are not applied.",
+        "- **Sector RS**: equal-weight GICS baskets vs whole-universe average over 21/63/126d from the static sector map.",
+        "- **Entry Committee**: technical gate -> bull/bear agent debate -> deterministic judge. Only INCLUDED names enter the paper ledger.",
+        "- **Prices are unadjusted closes** from NSE bhavcopy / Yahoo.",
         "- Nothing here is investment advice.",
     ]
     return "\n".join(lines) + "\n"
@@ -253,6 +226,8 @@ def main() -> int:
     try:
         _run(slug)
         return 0
+    except SystemExit:
+        raise
     except Exception:
         import traceback
 
@@ -283,24 +258,47 @@ def _run(slug: str) -> None:
     smap = load_sector_map()
     mom = momentum_ranks(hist)
     rs = relative_strength(hist, smap)
-    memos = build_memos(mom, smap, rs, slug)
-    recs = evaluate(mom.copy(), pd.DataFrame(), smap, hist=hist, rs=rs, memos=memos, fundamentals=_load_fundamentals()).head(15)
-    review_n = write_review_queue(slug, recs, memos)
+    fundamentals = _load_fundamentals()
+    committee, gated = entry.run_committee(mom, hist, smap, fundamentals, slug)
+    recs = evaluate(mom.copy(), pd.DataFrame(), smap, hist=hist, rs=rs, memos={}, fundamentals=fundamentals)
+    review_n = render_review(slug, committee)
+    last_date = str(hist["date"].max())
+    prices_last = hist[hist["date"].astype(str) == last_date].set_index("symbol")["close"]
+    rank_lookup = mom.set_index("symbol")[["momentum_rank", "momentum_score"]]
+    entries = []
+    from nla.engine import volatility_proxy, stop_pct_from_vol
+
+    for symbol in entry.included_entries(committee):
+        if symbol not in prices_last.index:
+            continue
+        style = next((r["style"] for r in committee if r["symbol"] == symbol), "-")
+        vol = volatility_proxy(hist, symbol)
+        entries.append(
+            {
+                "symbol": symbol,
+                "sector": smap[smap["symbol"] == symbol]["sector"].iloc[0] if symbol in set(smap["symbol"]) else "-",
+                "style": style,
+                "signal_price": float(prices_last[symbol]),
+                "momentum_rank": int(rank_lookup.loc[symbol, "momentum_rank"]) if symbol in rank_lookup.index else 0,
+                "momentum_score": float(rank_lookup.loc[symbol, "momentum_score"]) if symbol in rank_lookup.index else 0.0,
+                "stop_pct": stop_pct_from_vol(vol),
+            }
+        )
+    try:
+        added, _created = log_tranche(slug, last_date, entries)
+    except Exception as exc:
+        print(f"tranche logging failed: {exc}")
+        added = -1
     try:
         events = detect_events()
     except Exception:
         events = pd.DataFrame(columns=["symbol", "event", "detail"])
-    try:
-        added, _created = log_weekly_entries(mom, smap, slug, str(hist["date"].max()))
-    except Exception:
-        added = -1
     write_report(
         REPORTS_DIR / "weekly" / f"{slug}.md",
-        render_screen(slug, mom, rs, hist, smap, ledger_stats(), added, recs, events, len(memos), review_n),
+        render_screen(slug, mom, rs, hist, smap, ledger_stats(), added, recs, events, committee, gated, review_n),
     )
     pages = build_site()
-    print(f"weekly screen written: reports/weekly/{slug}.md (ledger +{added}, memos {len(memos)}, review {review_n}, site pages: {pages})")
-    return 0
+    print(f"weekly screen written: reports/weekly/{slug}.md (ledger +{added}, memos n/a, review {review_n}, site pages: {pages})")
 
 
 if __name__ == "__main__":
