@@ -53,9 +53,7 @@ def _call_gemini(prompt: str, timeout: int = 90) -> str:
 
 
 def available() -> bool:
-    return (LLM_PROVIDER == "opencode" and bool(OPENCODE_API_KEY)) or (
-        LLM_PROVIDER != "opencode" and bool(GEMINI_API_KEY)
-    )
+    return bool(OPENCODE_API_KEY or GEMINI_API_KEY)
 
 
 def complete(prompt: str) -> str:

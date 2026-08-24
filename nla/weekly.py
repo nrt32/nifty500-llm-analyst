@@ -60,6 +60,7 @@ def build_memos(mom: pd.DataFrame, smap: pd.DataFrame, rs: pd.DataFrame, slug: s
     sym_sector = dict(zip(smap["symbol"].astype(str), smap["sector"].astype(str)))
     sym_rs_rank = dict(zip(rs["sector"], rs["rs_rank"])) if not rs.empty else {}
     fundamentals = _load_fundamentals()
+    ok = err = 0
     for _, row in mom.head(MEMO_TOP_N).iterrows():
         symbol = str(row["symbol"])
         sector = sym_sector.get(symbol)
@@ -73,6 +74,12 @@ def build_memos(mom: pd.DataFrame, smap: pd.DataFrame, rs: pd.DataFrame, slug: s
         )
         if memo and "error" not in memo:
             memos[symbol] = memo
+            ok += 1
+            print(f"memo {symbol}: {memo.get('stance')} / {memo.get('conviction')}")
+        elif memo and "error" in memo:
+            err += 1
+            print(f"memo {symbol} FAILED: {memo.get('error')}")
+    print(f"memos built: ok={ok} errors={err}")
     return memos
 
 
