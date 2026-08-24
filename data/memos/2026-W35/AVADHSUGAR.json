@@ -2,9 +2,32 @@
   "symbol": "AVADHSUGAR",
   "week": "2026-W35",
   "generated_at": "2026-08-24",
-  "error": "_call_opencode: OPENCODE_API_KEY not set; _call_gemini: gemini 404: {\n  \"error\": {\n    \"code\": 404,\n    \"message\": \"This model models/gemini-2.0-flash is no longer available. Please update your code to use models/gemini-3.6-flash for the latest features and improvements.\",\n    \"status\": \"NOT_FOUND\"\n  }\n}\n",
+  "stance": "avoid",
+  "conviction": 75,
+  "thesis": "AVADHSUGAR exhibits extreme short-term overheating with a 157% rally over 126 sessions, pushing momentum to unsustainable levels. While recent quarterly sales grew 8.7%, annual net profit fell 35%, highlighting fundamental weakness beneath the rally. Entering at current levels carries severe downside risk from potential mean reversion and profit-taking.",
+  "risks": [
+    "Sharp mean reversion after parabolic +157% run-up",
+    "Weak underlying earnings with annual profit down 35%",
+    "Policy and regulatory changes in the sugar sector"
+  ],
+  "news_sentiment": "neutral",
   "packet": {
     "symbol": "AVADHSUGAR",
-    "sector": "unmapped"
+    "sector": "unmapped",
+    "sector_rs_rank": null,
+    "price": 834.8,
+    "ret_21d_pct": 56.1,
+    "ret_63d_pct": 81.3,
+    "ret_126d_pct": 156.9,
+    "momentum_score": 99.1,
+    "history_sessions": 250,
+    "fundamentals": {},
+    "recent_news_headlines": [
+      "Sugar stocks: Avadh Sugar, Bajaj Hind gain over 6% on duty-free import plan - Business Standard",
+      "Avadh Sugar & Energy Ltd. Share Price: Price Rise Analysis - Univest",
+      "Avadh Sugar Standalone June 2026 Net Sales at Rs 779.25 crore, up 8.74% Y-o-Y - Moneycontrol.com",
+      "Avadh Sugar fixes record date for \u20b910 dividend - scanx.trade",
+      "Avadh Sugar & Energy recommends Rs 10 dividend as annual net profit falls 35% in 2025-26 - ChiniMandi"
+    ]
   }
 }
