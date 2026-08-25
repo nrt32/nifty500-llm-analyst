@@ -78,6 +78,14 @@ def render_committee(results: list[dict], gated: int) -> list[str]:
             f"| {r['symbol']} | {r['sector']} | {r['style']} | {d['rsi']} | {d['ext_pct']} | {d['vol_ratio']} "
             f"| {side('bull')} | {side('bear')} | {r['decision']} |"
         )
+    lines += ["", "**Reasoning, name by name:**", ""]
+    for r in results:
+        lines += [
+            f"- **{r['symbol']} ({r['style']}, decision: {r['decision']})**",
+            f"  - Bull ({r['bull']['conviction']}): {r['bull']['reason']}",
+            f"  - Bear ({r['bear']['conviction']}): {r['bear']['reason']}",
+            f"  - Judge: {r['why']}",
+        ]
     return lines
 
 
@@ -111,15 +119,67 @@ def render_screen(
     committee: list[dict],
     gated: int,
     review_n: int,
+    scan_stats: dict | None = None,
 ) -> str:
+    scan_stats = scan_stats or {}
     first, last = hist["date"].min(), hist["date"].max()
     covered = len(smap)
     sym_sector = dict(zip(smap["symbol"], smap["sector"]))
+    included = [r for r in committee if r["decision"] == "INCLUDED"]
+    review_items = [r for r in committee if r["decision"] == "HUMAN_REVIEW"]
+    rejected_n = sum(1 for r in committee if r["decision"] == "REJECTED")
     lines = [
         f"# Weekly Quant Screen {slug}",
         "",
         f"Generated {date.today().isoformat()} - quant factors, hard technical gates, and a bull/bear entry committee.",
         "",
+        "## This Week's Action Summary",
+        "",
+    ]
+    if added > 0 and included:
+        names = ", ".join(r["symbol"] for r in included)
+        lines += [
+            f"**{added} new paper entries logged this week: {names}.**",
+            "If replicating manually: buy at the NEXT trading session's open (not Friday's close), "
+            "arm the stop shown in the ranked table below, size by the Weight % column. Settlement and "
+            "stop-tracking happen automatically from tomorrow's daily run.",
+        ]
+    else:
+        lines += [
+            "**No new entries were added to the paper portfolio this week.** That is a deliberate outcome, not an error.",
+        ]
+        if review_items:
+            names = ", ".join(r["symbol"] for r in review_items)
+            lines += [
+                f"The committee split on {names} - both cases sit in `reports/review/{slug}.md` awaiting YOUR call. "
+                "Each side's argument is quoted there; if you decide to take one anyway, entry would be next open, "
+                "with stop/weight as shown in the ranked table below."
+            ]
+        if committee:
+            lines.append(
+                f"Of {len(committee)} gate-passing candidates debated: {len(included)} included, "
+                f"{len(review_items)} human-review, {rejected_n} rejected."
+            )
+    if scan_stats.get("fail_counts"):
+        fc = ", ".join(f"{k}: {v}" for k, v in sorted(scan_stats["fail_counts"].items(), key=lambda kv: -kv[1]))
+        lines += [
+            "",
+            f"Why so few? Of {scan_stats.get('scanned', '-')} top-momentum names screened, failures were: {fc}. "
+            + (
+                "The dominant failure is **no-trigger**: uptrends that are not at a breakout or pullback point yet - "
+                "watchlist material, check back weekly."
+                if scan_stats["fail_counts"].get("no-trigger")
+                else ""
+            ),
+        ]
+    if scan_stats.get("near_misses"):
+        nm = ", ".join(f"{n['symbol']} ({n['detail']['dist_52w_high']:+.1f}% from 52w-high, vol x{n['detail']['vol_ratio']})" for n in scan_stats["near_misses"][:8])
+        lines += [f"**Near misses - one trigger away from eligibility:** {nm}."]
+    lines += [
+        "",
+        "---",
+    ]
+    lines += [
         "## Universe health",
         "",
         "| Field | Value |",
@@ -259,7 +319,7 @@ def _run(slug: str) -> None:
     mom = momentum_ranks(hist)
     rs = relative_strength(hist, smap)
     fundamentals = _load_fundamentals()
-    committee, gated = entry.run_committee(mom, hist, smap, fundamentals, slug)
+    committee, gated, scan_stats = entry.run_committee(mom, hist, smap, fundamentals, slug)
     recs = evaluate(mom.copy(), pd.DataFrame(), smap, hist=hist, rs=rs, memos={}, fundamentals=fundamentals)
     review_n = render_review(slug, committee)
     last_date = str(hist["date"].max())
@@ -295,7 +355,7 @@ def _run(slug: str) -> None:
         events = pd.DataFrame(columns=["symbol", "event", "detail"])
     write_report(
         REPORTS_DIR / "weekly" / f"{slug}.md",
-        render_screen(slug, mom, rs, hist, smap, ledger_stats(), added, recs, events, committee, gated, review_n),
+        render_screen(slug, mom, rs, hist, smap, ledger_stats(), added, recs, events, committee, gated, review_n, scan_stats),
     )
     pages = build_site()
     print(f"weekly screen written: reports/weekly/{slug}.md (ledger +{added}, memos n/a, review {review_n}, site pages: {pages})")

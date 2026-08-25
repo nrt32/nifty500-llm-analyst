@@ -146,15 +146,26 @@ def judge(bull: dict, bear: dict) -> tuple[str, str]:
     return "INCLUDED", f"included despite bear note: {bear['reason']}"
 
 
-def run_committee(mom: pd.DataFrame, hist: pd.DataFrame, smap: pd.DataFrame, fundamentals: dict[str, dict], week: str) -> tuple[list[dict], int]:
+def run_committee(mom: pd.DataFrame, hist: pd.DataFrame, smap: pd.DataFrame, fundamentals: dict[str, dict], week: str) -> tuple[list[dict], int, dict]:
     sym_sector = dict(zip(smap["symbol"].astype(str), smap["sector"].astype(str)))
-    sym_rs_rank = dict(zip(smap.get("sector"), smap.groupby("sector")["sector"].transform("count"))) if False else {}
     candidates = []
+    fail_counts: dict[str, int] = {}
+    near_misses: list[dict] = []
+    scanned = 0
     for _, row in mom.head(40).iterrows():
         symbol = str(row["symbol"])
+        scanned += 1
         vr = _volume_ratio(symbol)
         gate = technical_gate(hist, symbol, vr)
-        if gate and gate["passed"]:
+        if not gate:
+            continue
+        failed = [k for k, v in gate["checks"].items() if not v]
+        if failed:
+            label = "no-trigger" if "trigger" in failed else (failed[0])
+            fail_counts[label] = fail_counts.get(label, 0) + 1
+            if failed == ["trigger"]:
+                near_misses.append({"symbol": symbol, "detail": gate["detail"]})
+        if gate["passed"]:
             row_dict = row.to_dict()
             row_dict["_gate"] = gate
             candidates.append(row_dict)
@@ -187,7 +198,8 @@ def run_committee(mom: pd.DataFrame, hist: pd.DataFrame, smap: pd.DataFrame, fun
             }
         )
         print(f"committee {symbol}: {decision} (bull {bull['verdict']}/{bull['conviction']}, bear {bear['verdict']}/{bear['conviction']})", flush=True)
-    return results, len(candidates)
+    stats = {"scanned": scanned, "gated": len(candidates), "fail_counts": fail_counts, "near_misses": near_misses}
+    return results, len(candidates), stats
 
 
 def included_entries(results: list[dict]) -> list[str]:
