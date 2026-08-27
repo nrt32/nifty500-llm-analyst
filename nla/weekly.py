@@ -51,7 +51,6 @@ import json
 
 def render_committee(results: list[dict], gated: int) -> list[str]:
     included = sum(1 for r in results if r["decision"] == "INCLUDED")
-    review = sum(1 for r in results if r["decision"] == "HUMAN_REVIEW")
     lines = [
         "",
         "## Entry Committee",
@@ -59,10 +58,10 @@ def render_committee(results: list[dict], gated: int) -> list[str]:
         "Candidates must first pass a hard technical gate (uptrend above EMA50/200, RSI 45-78, "
         "extension <=15% over EMA21, plus a BREAKOUT or PULLBACK trigger). Survivors face a two-agent debate: "
         "a Bull researcher argues for inclusion, a Bear researcher argues to exclude. A deterministic judge rules; "
-        "split decisions with a strong bear go to the human review queue.",
+        "strong bear vetoes reject the candidate outright.",
         "",
         f"Debated {len(results)} of {gated} gate-passers. Outcomes: **{included} included**, "
-        f"{review} human-review, {sum(1 for r in results if r['decision'] == 'REJECTED')} rejected.",
+        f"{sum(1 for r in results if r['decision'] == 'REJECTED')} rejected.",
         "",
         "| Symbol | Sector | Style | RSI | Ext% | VolRatio | Bull | Bear | Decision |",
         "| --- | --- | --- | --- | --- | --- | --- | --- | --- |",
@@ -89,23 +88,6 @@ def render_committee(results: list[dict], gated: int) -> list[str]:
     return lines
 
 
-def render_review(slug: str, results: list[dict]) -> int:
-    flagged = [r for r in results if r["decision"] == "HUMAN_REVIEW"]
-    if not flagged:
-        return 0
-    lines = [f"# Human Review Queue {slug}", "", "The committee split on these - resolve manually before they can ever be sized.", ""]
-    for r in flagged:
-        lines += [
-            f"## {r['symbol']} ({r['style']}) - quant momentum {r['momentum_score']}",
-            "",
-            f"- Bull: {r['bull']['verdict']}/{r['bull']['conviction']} - {r['bull']['reason']}",
-            f"- Bear: {r['bear']['verdict']}/{r['bear']['conviction']} - {r['bear']['reason']}",
-            "",
-        ]
-    write_report(REPORTS_DIR / "review" / f"{slug}.md", "\n".join(lines) + "\n")
-    return len(flagged)
-
-
 def render_screen(
     slug: str,
     mom: pd.DataFrame,
@@ -118,7 +100,6 @@ def render_screen(
     events: pd.DataFrame,
     committee: list[dict],
     gated: int,
-    review_n: int,
     scan_stats: dict | None = None,
 ) -> str:
     scan_stats = scan_stats or {}
@@ -126,7 +107,6 @@ def render_screen(
     covered = len(smap)
     sym_sector = dict(zip(smap["symbol"], smap["sector"]))
     included = [r for r in committee if r["decision"] == "INCLUDED"]
-    review_items = [r for r in committee if r["decision"] == "HUMAN_REVIEW"]
     rejected_n = sum(1 for r in committee if r["decision"] == "REJECTED")
     lines = [
         f"# Weekly Quant Screen {slug}",
@@ -147,18 +127,11 @@ def render_screen(
     else:
         lines += [
             "**No new entries were added to the paper portfolio this week.** That is a deliberate outcome, not an error.",
+            "The committee debated every qualifying setup and none cleared the bar for a rare, high-conviction entry.",
         ]
-        if review_items:
-            names = ", ".join(r["symbol"] for r in review_items)
-            lines += [
-                f"The committee split on {names} - both cases sit in `reports/review/{slug}.md` awaiting YOUR call. "
-                "Each side's argument is quoted there; if you decide to take one anyway, entry would be next open, "
-                "with stop/weight as shown in the ranked table below."
-            ]
         if committee:
             lines.append(
-                f"Of {len(committee)} gate-passing candidates debated: {len(included)} included, "
-                f"{len(review_items)} human-review, {rejected_n} rejected."
+                f"Of {len(committee)} gate-passing candidates debated: {len(included)} included, {rejected_n} rejected."
             )
     if scan_stats.get("fail_counts"):
         fc = ", ".join(f"{k}: {v}" for k, v in sorted(scan_stats["fail_counts"].items(), key=lambda kv: -kv[1]))
@@ -229,14 +202,12 @@ def render_screen(
             f"| {_pct(r.get('ret_63d'))} | {_pct(r.get('ret_126d'))} | {r['momentum_score']} |"
         )
     lines += render_committee(committee, gated)
-    if review_n:
-        lines += ["", f"**{review_n} conflict(s) routed to reports/review/{slug}.md - resolve before acting.**"]
     lines += ["", "## Ranked portfolio (score engine)", ""]
     lines += [
         "| Rank | Symbol | Final | Weight % | Stop % |",
         "| --- | --- | --- | --- | --- |",
     ]
-    eligible = recs[recs["flag"] != "HUMAN_REVIEW"].head(15)
+    eligible = recs.head(15)
     for i, (_, r) in enumerate(eligible.iterrows(), start=1):
         stop_txt = _pct(r["stop_pct"]) if r["stop_pct"] else "-"
         lines.append(f"| {i} | {r['symbol']} | {r['final_score']} | {r['suggested_weight_pct']} | {stop_txt} |")
@@ -321,7 +292,6 @@ def _run(slug: str) -> None:
     fundamentals = _load_fundamentals()
     committee, gated, scan_stats = entry.run_committee(mom, hist, smap, fundamentals, slug)
     recs = evaluate(mom.copy(), pd.DataFrame(), smap, hist=hist, rs=rs, memos={}, fundamentals=fundamentals)
-    review_n = render_review(slug, committee)
     last_date = str(hist["date"].max())
     prices_last = hist[hist["date"].astype(str) == last_date].set_index("symbol")["close"]
     rank_lookup = mom.set_index("symbol")[["momentum_rank", "momentum_score"]]
@@ -355,10 +325,10 @@ def _run(slug: str) -> None:
         events = pd.DataFrame(columns=["symbol", "event", "detail"])
     write_report(
         REPORTS_DIR / "weekly" / f"{slug}.md",
-        render_screen(slug, mom, rs, hist, smap, ledger_stats(), added, recs, events, committee, gated, review_n, scan_stats),
+        render_screen(slug, mom, rs, hist, smap, ledger_stats(), added, recs, events, committee, gated, scan_stats),
     )
     pages = build_site()
-    print(f"weekly screen written: reports/weekly/{slug}.md (ledger +{added}, memos n/a, review {review_n}, site pages: {pages})")
+    print(f"weekly screen written: reports/weekly/{slug}.md (ledger +{added}, site pages: {pages})")
 
 
 if __name__ == "__main__":

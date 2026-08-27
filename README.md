@@ -18,10 +18,10 @@ announcements ┘            sector relative strength     sector-cycle stage
                         blend(quant, llm_conviction×agreement) × cycle_mult − penalties
                         HARD RULES: SL=2×ATR(14), ≤10%/position, ≤30%/sector,
                         ≤20 positions, portfolio circuit breaker
-                        rule-conflicts → HUMAN REVIEW queue
-                                 ↓
-                    weekly report → markdown → static site → GitHub Pages
-                    paper ledger logs every reco for validation
+                        strong bear veto → auto-reject (trial: trust system)
+                                  ↓
+                     weekly report → markdown → static site → GitHub Pages
+                     paper ledger logs rare high-conviction entries for validation
 ```
 
 ## Phases
@@ -39,7 +39,7 @@ announcements ┘            sector relative strength     sector-cycle stage
 
 Two keyless/free providers in a failover chain (`nla/llm_client.py`): opencode Zen primary (no auth needed, free-model pool with automatic skip of dead/overloaded models), Gemini `flash-latest` fallback (auto-adopts the API's suggested model when one retires).
 
-**Entry committee** (`nla/entry.py`): candidates from the weekly screen must first pass a hard technical gate - uptrend above EMA50/200, RSI(14) 45-78, extension <=15% over EMA21, plus a real trigger: either a volume-confirmed BREAKOUT (>=98% of 52-week high on >=1.5x median volume) or a PULLBACK resumption (EMA20 touch within 5 sessions while above it, uptrend intact). Survivors face a **two-agent debate**: a Bull researcher argues for inclusion, a Bear researcher argues to exclude - same packet, opposing mandates, JSON verdicts. A deterministic judge rules: consensus includes, bull-rejection kills, and split decisions with a strong bear (conviction >=65) route to the human review queue instead of the portfolio.
+**Entry committee** (`nla/entry.py`): candidates from the weekly screen must first pass a hard technical gate - uptrend above EMA50/200, RSI(14) 45-78, extension <=15% over EMA21, plus a real trigger: either a volume-confirmed BREAKOUT (>=98% of 52-week high on >=1.5x median volume) or a PULLBACK resumption (EMA20 touch within 5 sessions while above it, uptrend intact). Survivors face a **two-agent debate**: a Bull researcher argues for inclusion, a Bear researcher argues to exclude - same packet, opposing mandates, JSON verdicts. A deterministic judge rules: consensus includes, bull-rejection kills, and strong bear veto (>=65) rejects outright - no human queue in trial mode, the system decides.
 
 **Layered exits** (`nla/exits.py`, checked daily): initial volatility stop (intraday low) -> chandelier-style trailing stop off the high-water close (close-confirmed) -> trend break (two consecutive closes under EMA50) -> time stop (flat after 40 sessions).
 
@@ -92,7 +92,7 @@ Both are consumed by LLM memo packets. Full-universe refresh at N=1000 costs rou
 
 ## Paper ledger
 
-Every weekly run logs the screen's top 20 as hypothetical long entries into `data/ledger/paper_ledger.csv` (append-only, one tranche per ISO week, idempotent on reruns). Two prices are tracked: `signal_price` (decision-day close, for signal purity) and `exec_price` — auto-filled by the daily run at the **next session's open**, which is what a person acting on the report could actually get. The gap between the two is the measured execution cost of acting on weekly signals. Rows stay `open` until the Phase 3 score engine defines stops and exits; monthly scoring against the Nifty 500 TRI benchmark lands with Phase 5. This starts the 3–6 month shadow-validation clock from the first logged week.
+The weekly committee rarely logs entries — typically 0-2 per week, only when a setup passes the technical gate and both agents agree (or the bear is weak). Each entry is appended to `data/ledger/paper_ledger.csv` (one tranche per ISO week, idempotent). Two prices are tracked: `signal_price` (decision-day close) and `exec_price` — auto-filled at the next session's open. Rows stay `open` until layered exits trigger; monthly scoring vs Nifty 500 TRI lands in Phase 5. This starts the 3–6 month shadow-validation clock.
 
 ## Security model
 

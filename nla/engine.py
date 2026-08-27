@@ -76,8 +76,7 @@ def evaluate(
             flags.append("")
         else:
             blended = BLEND_QUANT_W * quant + BLEND_LLM_W * conviction
-            gap = abs(quant - conviction)
-            flags.append("HUMAN_REVIEW" if gap >= CONFLICT_GAP else "")
+            flags.append("")
         convictions.append(conviction)
         stances.append(stance)
         blends.append(blended)
@@ -105,7 +104,7 @@ def evaluate(
     out["sector_tag"] = [sym_sector.get(str(s), "-") for s in out["symbol"]]
     out["suggested_weight_pct"] = 0.0
     if hist is not None:
-        eligible = out[out["flag"] != "HUMAN_REVIEW"].sort_values("final_score", ascending=False)
+        eligible = out.sort_values("final_score", ascending=False)
         sel = eligible.head(MAX_POSITIONS)
         inv_vol: dict[str, float] = {}
         for _, r in sel.iterrows():

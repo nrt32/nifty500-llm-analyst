@@ -1,7 +1,7 @@
 {
   "date": "2026-08-27",
   "universe_refreshed": true,
-  "price_source": "bhavcopy",
+  "price_source": "exists",
   "repaired": [],
   "history_rows": 255475,
   "liquid_universe": 1039,

@@ -142,7 +142,7 @@ def judge(bull: dict, bear: dict) -> tuple[str, str]:
     if bear["verdict"] == "include":
         return "INCLUDED", "committee consensus"
     if bear["conviction"] >= 65:
-        return "HUMAN_REVIEW", f"bear dissents: {bear['reason']}"
+        return "REJECTED", f"bear veto ({bear['conviction']}): {bear['reason']}"
     return "INCLUDED", f"included despite bear note: {bear['reason']}"
 
 
