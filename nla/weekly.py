@@ -202,19 +202,32 @@ def render_screen(
             f"| {_pct(r.get('ret_63d'))} | {_pct(r.get('ret_126d'))} | {r['momentum_score']} |"
         )
     lines += render_committee(committee, gated)
-    lines += ["", "## Ranked portfolio (score engine)", ""]
+    # Ranked watchlist (quality-adjusted) — distinct from actual paper portfolio
+    lines += ["", "## Quality-adjusted watchlist (top 15 by final score)", ""]
     lines += [
-        "| Rank | Symbol | Final | Weight % | Stop % |",
-        "| --- | --- | --- | --- | --- |",
+        "Watchlist only — not trades. Final score blends momentum (50%), sector-relative quality (30%: ROCE/ROE/D/E/P/E/EBIT margin, ranked within GICS sector), and LLM conviction (20% when present).",
+        "",
+        "| Rank | Symbol | Sector | Final | Quant | Quality | Weight % | Stop % |",
+        "| --- | --- | --- | --- | --- | --- | --- | --- |",
     ]
-    eligible = recs.head(15)
-    for i, (_, r) in enumerate(eligible.iterrows(), start=1):
+    watchlist = recs.head(15)
+    for i, (_, r) in enumerate(watchlist.iterrows(), start=1):
         stop_txt = _pct(r["stop_pct"]) if r["stop_pct"] else "-"
-        lines.append(f"| {i} | {r['symbol']} | {r['final_score']} | {r['suggested_weight_pct']} | {stop_txt} |")
+        q = f"{r['quality_score']:.0f}" if "quality_score" in r and not pd.isna(r["quality_score"]) else "-"
+        lines.append(f"| {i} | {r['symbol']} | {r['sector_tag']} | {r['final_score']} | {r['quant_score']} | {q} | {r['suggested_weight_pct']} | {stop_txt} |")
     lines += [
         "",
-        "Weights are volatility-targeted across committee-included names only and capped at 10%/position, "
-        "30%/sector, 20 positions.",
+        "Weights shown are *what would be used* if the watchlist names had passed the entry committee; only committee-INCLUDED names ever enter the paper ledger below.",
+        "",
+        "## Current paper portfolio",
+        "",
+    ]
+    open_positions = stats.get("open", 0)
+    if open_positions == 0:
+        lines += ["No open paper positions — the ledger is empty. The system is waiting for rare, high-conviction setups (typically 0–2 per week)."]
+    else:
+        lines += [f"{open_positions} open position(s) — see Paper ledger section and `data/ledger/paper_ledger.csv` for details."]
+    lines += [
         "",
         "## Event watchlist",
         "",
@@ -290,8 +303,15 @@ def _run(slug: str) -> None:
     mom = momentum_ranks(hist)
     rs = relative_strength(hist, smap)
     fundamentals = _load_fundamentals()
+    try:
+        from nla.quality import compute_quality_scores
+
+        qdf = compute_quality_scores(fundamentals, smap)
+        quality_map = dict(zip(qdf["symbol"], qdf["quality_score"]))
+    except Exception:
+        quality_map = {}
     committee, gated, scan_stats = entry.run_committee(mom, hist, smap, fundamentals, slug)
-    recs = evaluate(mom.copy(), pd.DataFrame(), smap, hist=hist, rs=rs, memos={}, fundamentals=fundamentals)
+    recs = evaluate(mom.copy(), pd.DataFrame(), smap, hist=hist, rs=rs, memos={}, fundamentals=fundamentals, quality_map=quality_map)
     last_date = str(hist["date"].max())
     prices_last = hist[hist["date"].astype(str) == last_date].set_index("symbol")["close"]
     rank_lookup = mom.set_index("symbol")[["momentum_rank", "momentum_score"]]

@@ -47,9 +47,11 @@ def evaluate(
     rs: pd.DataFrame | None = None,
     memos: dict[str, dict] | None = None,
     fundamentals: dict[str, dict] | None = None,
+    quality_map: dict[str, float] | None = None,
 ) -> pd.DataFrame:
     memos = memos or {}
     fundamentals = fundamentals or {}
+    quality_map = quality_map or {}
     sym_sector = dict(zip(sector_map["symbol"].astype(str), sector_map["sector"].astype(str)))
     out = candidates.copy()
     out["quant_score"] = out["momentum_score"]
@@ -59,6 +61,7 @@ def evaluate(
     flags: list[str] = []
     mults: list[float] = []
     stops: list[float | None] = []
+    quality_scores: list[float] = []
     for _, r in out.iterrows():
         symbol = str(r["symbol"])
         memo = memos.get(symbol)
@@ -71,24 +74,20 @@ def evaluate(
             except (TypeError, ValueError):
                 conviction = None
         quant = float(r["quant_score"])
+        quality = float(quality_map.get(symbol, 50.0))
+        quality_scores.append(quality)
+        quality_mult = 0.85 + 0.30 * (quality / 100.0)
         if conviction is None:
-            blended = quant
+            blended = 0.62 * quant + 0.38 * quality
             flags.append("")
         else:
-            blended = BLEND_QUANT_W * quant + BLEND_LLM_W * conviction
+            blended = 0.50 * quant + 0.30 * quality + 0.20 * conviction
             flags.append("")
         convictions.append(conviction)
         stances.append(stance)
         blends.append(blended)
         sector = sym_sector.get(symbol)
-        mult = _cycle_multiplier(rs, sector)
-        fund = (fundamentals.get(symbol) or {}).get("metrics", {})
-        roce = fund.get("roce")
-        pe = fund.get("stock p/e")
-        if isinstance(roce, (int, float)) and roce < 8:
-            mult *= 0.93
-        if isinstance(pe, (int, float)) and pe > 60:
-            mult *= 0.95
+        mult = _cycle_multiplier(rs, sector) * quality_mult
         if int(r.get("obs", 999)) < 130:
             mult *= 0.92
         mults.append(round(mult, 4))
@@ -96,6 +95,7 @@ def evaluate(
         stops.append(stop_pct_from_vol(vol))
     out["llm_conviction"] = convictions
     out["llm_stance"] = stances
+    out["quality_score"] = quality_scores
     out["blended_score"] = [round(b, 1) for b in blends]
     out["flag"] = flags
     out["final_score"] = [round(b * m, 1) for b, m in zip(blends, mults)]
