@@ -1,1 +1,4 @@
 week,entry_date,symbol,sector,style,signal_price,momentum_rank,momentum_score,status,exec_date,exec_price,exec_basis,stop_pct,exit_date,exit_price,exit_reason
+2026-W37,2026-09-11,SHILPAMED,Healthcare,BREAKOUT,961.15,13,97.0,open,,,,0.08,,,
+2026-W37,2026-09-11,SSWL,Consumer Cyclical,BREAKOUT,370.65,29,94.4,open,,,,0.08,,,
+2026-W37,2026-09-11,SMLMAH,Consumer Cyclical,BREAKOUT,6583.0,30,94.3,open,,,,0.08,,,
