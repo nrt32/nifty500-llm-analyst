@@ -8,3 +8,5 @@ week,entry_date,symbol,sector,style,signal_price,momentum_rank,momentum_score,st
 2026-W38,2026-09-18,TIMEX,Consumer Cyclical,BREAKOUT,714.2,22,95.8,open,2026-09-21,714.2,next_open,0.08,,,
 2026-W38,2026-09-18,AVALON,Technology,BREAKOUT,2537.7,27,95.1,open,2026-09-21,2550.0,next_open,0.08,,,
 2026-W38,2026-09-18,REDINGTON,Technology,BREAKOUT,399.85,37,93.0,open,2026-09-21,400.0,next_open,0.08,,,
+2026-W39,2026-09-25,FCL,Basic Materials,BREAKOUT,60.48,21,97.4,open,,,,0.08,,,
+2026-W39,2026-09-25,WELCORP,Basic Materials,BREAKOUT,2832.4,23,97.2,open,,,,0.08,,,
