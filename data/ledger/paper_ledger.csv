@@ -13,3 +13,5 @@ week,entry_date,symbol,sector,style,signal_price,momentum_rank,momentum_score,st
 2026-W40,2026-10-02,RATNAVEER,Basic Materials,BREAKOUT,345.45,15,97.9,open,2026-10-05,347.6,next_open,0.08,,,
 2026-W40,2026-10-02,MOREPENLAB,Healthcare,BREAKOUT,133.72,19,97.5,open,2026-10-05,134.5,next_open,0.08,,,
 2026-W40,2026-10-02,CUPID,Consumer Defensive,BREAKOUT,312.5,35,95.5,open,2026-10-05,314.3,next_open,0.08,,,
+2026-W41,2026-10-09,SHADOWFAX,Industrials,BREAKOUT,294.85,30,96.5,open,,,,0.08,,,
+2026-W41,2026-10-09,SKYGOLD,Consumer Cyclical,BREAKOUT,921.0,33,96.2,open,,,,0.08,,,
