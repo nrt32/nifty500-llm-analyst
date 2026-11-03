@@ -1,10 +1,10 @@
 {
-  "date": "2026-11-02",
+  "date": "2026-11-03",
   "universe_refreshed": true,
   "price_source": "bhavcopy",
   "repaired": [],
-  "history_rows": 381019,
-  "liquid_universe": 1045,
-  "ledger_settled": 4,
+  "history_rows": 383763,
+  "liquid_universe": 1047,
+  "ledger_settled": 0,
   "ledger_stopped": 0
 }
