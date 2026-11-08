@@ -21,3 +21,4 @@ week,entry_date,symbol,sector,style,signal_price,momentum_rank,momentum_score,st
 2026-W44,2026-10-30,ATHERENERG,Consumer Cyclical,BREAKOUT,1756.0,13,97.1,open,2026-11-02,1767.8,next_open,0.08,,,
 2026-W44,2026-10-30,COFORGE,Technology,BREAKOUT,2045.0,28,94.1,open,2026-11-02,2065.0,next_open,0.08,,,
 2026-W44,2026-10-30,SONACOMS,Consumer Cyclical,BREAKOUT,890.5,37,92.4,open,2026-11-02,900.0,next_open,0.08,,,
+2026-W45,2026-11-06,SHYAMMETL,Basic Materials,BREAKOUT,1300.6,25,95.0,open,,,,0.08,,,
