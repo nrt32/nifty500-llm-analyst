@@ -25,3 +25,7 @@ week,entry_date,symbol,sector,style,signal_price,momentum_rank,momentum_score,st
 2026-W46,2026-11-13,AARTIDRUGS,-,BREAKOUT,507.35,6,98.6,open,2026-11-16,507.35,next_open,0.08,,,
 2026-W46,2026-11-13,VRLLOG,-,BREAKOUT,340.1,17,96.6,open,2026-11-16,339.0,next_open,0.081,,,
 2026-W46,2026-11-13,RPEL,Basic Materials,BREAKOUT,1946.2,38,93.4,open,2026-11-16,1971.0,next_open,0.08,,,
+2026-W47,2026-11-20,ICIL,Consumer Cyclical,BREAKOUT,580.25,7,98.7,open,,,,0.08,,,
+2026-W47,2026-11-20,WELSPUNLIV,Consumer Cyclical,BREAKOUT,268.78,11,98.0,open,,,,0.08,,,
+2026-W47,2026-11-20,SGFIN,Financial Services,BREAKOUT,821.05,37,93.8,open,,,,0.08,,,
+2026-W47,2026-11-20,FREDUN,-,BREAKOUT,1693.9,39,93.7,open,,,,0.08,,,
